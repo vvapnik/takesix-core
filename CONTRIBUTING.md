@@ -5,6 +5,8 @@ and how to write commits.
 
 ## Setup
 
+Use Node 24 LTS (`.nvmrc`; with nvm run `nvm use`).
+
 ```bash
 npm install
 npm test

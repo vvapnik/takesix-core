@@ -64,6 +64,8 @@ re-walking the tree when rendering many things from one document.
 
 ## Development
 
+Node 24 LTS (see `.nvmrc`; with nvm: `nvm use`).
+
 ```bash
 npm install
 npm test

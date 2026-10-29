@@ -37,10 +37,11 @@
     "url": "git+https://github.com/vvapnik/takesix-core.git"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=22"
   },
   "devDependencies": {
-    "typescript": "~5.4.5",
-    "vitest": "~0.34.6"
+    "@types/node": "^24.19.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
   }
 }
