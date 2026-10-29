@@ -1,0 +1,46 @@
+{
+  "name": "@takesix/core",
+  "version": "0.1.0",
+  "description": "takesix document format: readable diagrams with at most 6 blocks per level",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./schema.json": "./schema/takesix-1.0.schema.json"
+  },
+  "files": [
+    "dist",
+    "schema",
+    "FORMAT.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "license": "MIT",
+  "keywords": [
+    "diagram",
+    "architecture",
+    "c4",
+    "presentation",
+    "takesix"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vvapnik/takesix-core.git"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "devDependencies": {
+    "typescript": "~5.4.5",
+    "vitest": "~0.34.6"
+  }
+}
