@@ -4,29 +4,51 @@
   "title": "takesix document",
   "description": "A diagram split into levels of at most 6 blocks. Structural rules that JSON Schema cannot express (unique ids, existing link endpoints) are checked by validateDocument() in @takesix/core.",
   "type": "object",
-  "required": ["takesix", "title", "blocks"],
+  "required": [
+    "takesix",
+    "title",
+    "blocks"
+  ],
   "additionalProperties": false,
   "properties": {
-    "$schema": { "type": "string" },
+    "$schema": {
+      "type": "string"
+    },
     "takesix": {
       "type": "string",
       "pattern": "^1\\.[0-9]+$",
       "description": "Format version."
     },
-    "title": { "type": "string", "minLength": 1 },
-    "description": { "type": "string" },
-    "layout": { "$ref": "#/$defs/layout" },
-    "blocks": { "$ref": "#/$defs/blocks" },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "blocks": {
+      "$ref": "#/$defs/blocks"
+    },
     "links": {
       "type": "array",
-      "items": { "$ref": "#/$defs/link" }
+      "items": {
+        "$ref": "#/$defs/link"
+      }
     },
-    "meta": { "$ref": "#/$defs/meta" }
+    "meta": {
+      "$ref": "#/$defs/meta"
+    }
   },
   "$defs": {
-    "layout": {
-      "enum": ["tiles", "list", "circle"],
-      "description": "How children are arranged on screen."
+    "size": {
+      "enum": [
+        "S",
+        "M",
+        "L",
+        "F"
+      ],
+      "default": "M",
+      "description": "Width on its level: S a third, M a half, L two thirds, F the full width."
     },
     "meta": {
       "type": "object",
@@ -35,11 +57,16 @@
     "blocks": {
       "type": "array",
       "maxItems": 6,
-      "items": { "$ref": "#/$defs/block" }
+      "items": {
+        "$ref": "#/$defs/block"
+      }
     },
     "block": {
       "type": "object",
-      "required": ["id", "title"],
+      "required": [
+        "id",
+        "title"
+      ],
       "additionalProperties": false,
       "properties": {
         "id": {
@@ -47,7 +74,10 @@
           "minLength": 1,
           "description": "Unique across the whole document."
         },
-        "title": { "type": "string", "minLength": 1 },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
         "description": {
           "type": "string",
           "description": "Short plain-text summary shown on the card."
@@ -56,27 +86,57 @@
           "type": "string",
           "description": "Long-form Markdown shown in the details panel."
         },
-        "icon": { "type": "string" },
-        "layout": { "$ref": "#/$defs/layout" },
-        "children": { "$ref": "#/$defs/blocks" },
-        "meta": { "$ref": "#/$defs/meta" }
+        "icon": {
+          "type": "string"
+        },
+        "size": {
+          "$ref": "#/$defs/size"
+        },
+        "children": {
+          "$ref": "#/$defs/blocks"
+        },
+        "meta": {
+          "$ref": "#/$defs/meta"
+        }
       }
     },
     "link": {
       "type": "object",
-      "required": ["from", "to"],
+      "required": [
+        "from",
+        "to"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "from": { "type": "string", "minLength": 1 },
-        "to": { "type": "string", "minLength": 1 },
-        "label": { "type": "string" },
-        "description": { "type": "string" },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "from": {
+          "type": "string",
+          "minLength": 1
+        },
+        "to": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
         "direction": {
-          "enum": ["forward", "both", "none"],
+          "enum": [
+            "forward",
+            "both",
+            "none"
+          ],
           "default": "forward"
         },
-        "meta": { "$ref": "#/$defs/meta" }
+        "meta": {
+          "$ref": "#/$defs/meta"
+        }
       }
     }
   }

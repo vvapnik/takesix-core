@@ -23,10 +23,9 @@ listed below and checked by `validateDocument()` in `@takesix/core`.
       "id": "api",
       "title": "API",
       "description": "Public HTTP API",
-      "layout": "list",
       "children": [
-        { "id": "auth", "title": "Auth" },
-        { "id": "orders", "title": "Orders", "details": "Handles **checkout** and refunds." }
+        { "id": "auth", "title": "Auth", "size": "S" },
+        { "id": "orders", "title": "Orders", "size": "L", "details": "Handles **checkout** and refunds." }
       ]
     },
     { "id": "db", "title": "Database" }
@@ -47,7 +46,6 @@ listed below and checked by `validateDocument()` in `@takesix/core`.
 | `blocks` | Block[] | yes | Top level, at most 6. |
 | `links` | Link[] | | All links of the document. |
 | `description` | string | | |
-| `layout` | Layout | | Layout of the top level. |
 | `meta` | object | | Extension data, see below. |
 | `$schema` | string | | Schema URL for editors. |
 
@@ -60,7 +58,7 @@ listed below and checked by `validateDocument()` in `@takesix/core`.
 | `description` | string | | Short plain text shown on the card. |
 | `details` | string | | Long Markdown text shown in the details panel. |
 | `icon` | string | | An emoji or a single character. |
-| `layout` | Layout | | How this block's children are arranged. |
+| `size` | Size | | Width on its level, `"M"` when absent. |
 | `children` | Block[] | | At most 6. |
 | `meta` | object | | Extension data. |
 
@@ -96,10 +94,21 @@ A link between a block and its own ancestor or descendant is never visible on
 any level. It is allowed in files (validators warn about it) but editors do
 not create such links.
 
-## Layout
+## Size
 
-`"tiles"` (default grid), `"list"` (one column), `"circle"` (around the
-centre). Viewers may fall back to `"tiles"` for layouts they do not know.
+There are no layouts to choose from: a level is a flow of blocks, left to
+right, wrapping to the next row. Each block sets its own width:
+
+| Size | Width |
+|---|---|
+| `"S"` | a third |
+| `"M"` | a half (default) |
+| `"L"` | two thirds |
+| `"F"` | the full width |
+
+Three `S` blocks make a row of tiles, six `F` blocks make a list, `L` + `S`
+or `M` + `M` fill a row. Blocks keep their order; a block that does not fit
+the rest of a row starts the next one.
 
 ## Validation rules
 
@@ -110,7 +119,7 @@ Errors (the document is rejected):
 - duplicate block id, duplicate link id;
 - link endpoint that is not a block id;
 - link from a block to itself;
-- unknown `layout` or `direction` value;
+- unknown `size` or `direction` value;
 - version with a major number other than `1`.
 
 Warnings (the document is accepted):

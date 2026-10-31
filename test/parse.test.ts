@@ -22,10 +22,11 @@ describe('migrateLegacy', () => {
       title: 'Demo',
       blocks: [
         {
-          id: '1', title: 'Frontend', description: 'All client-side concerns', icon: '⬡', layout: 'list',
+          id: '1', title: 'Frontend', description: 'All client-side concerns', icon: '⬡',
+          // children of a "list" become full-width rows
           children: [
-            { id: '1-1', title: 'React', description: 'UI component library' },
-            { id: '1-2', title: 'Styling' },
+            { id: '1-1', title: 'React', description: 'UI component library', size: 'F' },
+            { id: '1-2', title: 'Styling', size: 'F' },
           ],
         },
         { id: '2', title: 'Backend', description: 'Server side' },

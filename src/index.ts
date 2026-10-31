@@ -1,5 +1,5 @@
-export type { Block, Layout, Link, LinkDirection, Meta, TakeSixDocument } from './types.js'
-export { FORMAT_VERSION, LAYOUTS, LINK_DIRECTIONS, MAX_BLOCKS_PER_LEVEL, SCHEMA_URL } from './constants.js'
+export type { Block, Link, LinkDirection, Meta, Size, TakeSixDocument } from './types.js'
+export { DEFAULT_SIZE, FORMAT_VERSION, LINK_DIRECTIONS, MAX_BLOCKS_PER_LEVEL, SCHEMA_URL, SIZES } from './constants.js'
 export { TakeSixError, type TakeSixErrorCode } from './errors.js'
 export { createId } from './id.js'
 export { buildIndex, type IndexEntry, type TreeIndex } from './tree-index.js'

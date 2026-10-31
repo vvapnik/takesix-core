@@ -1,4 +1,4 @@
-import { LAYOUTS, LINK_DIRECTIONS, MAX_BLOCKS_PER_LEVEL, SUPPORTED_MAJOR } from './constants.js'
+import { LINK_DIRECTIONS, MAX_BLOCKS_PER_LEVEL, SIZES, SUPPORTED_MAJOR } from './constants.js'
 import { buildIndex } from './tree-index.js'
 import type { TakeSixDocument } from './types.js'
 
@@ -31,8 +31,8 @@ export interface ValidationResult {
   issues: ValidationIssue[]
 }
 
-const DOCUMENT_FIELDS = ['takesix', '$schema', 'title', 'description', 'layout', 'blocks', 'links', 'meta']
-const BLOCK_FIELDS = ['id', 'title', 'description', 'details', 'icon', 'layout', 'children', 'meta']
+const DOCUMENT_FIELDS = ['takesix', '$schema', 'title', 'description', 'blocks', 'links', 'meta']
+const BLOCK_FIELDS = ['id', 'title', 'description', 'details', 'icon', 'size', 'children', 'meta']
 const LINK_FIELDS = ['id', 'from', 'to', 'label', 'description', 'direction', 'meta']
 
 type Obj = Record<string, unknown>
@@ -65,9 +65,9 @@ export function validateDocument(input: unknown): ValidationResult {
     }
   }
 
-  const checkLayout = (obj: Obj, path: string) => {
-    if (obj.layout !== undefined && !LAYOUTS.includes(obj.layout as never)) {
-      error('invalid-value', `${path}/layout`, `"layout" must be one of: ${LAYOUTS.join(', ')}`)
+  const checkSize = (obj: Obj, path: string) => {
+    if (obj.size !== undefined && !SIZES.includes(obj.size as never)) {
+      error('invalid-value', `${path}/size`, `"size" must be one of: ${SIZES.join(', ')}`)
     }
   }
 
@@ -92,7 +92,6 @@ export function validateDocument(input: unknown): ValidationResult {
 
   checkString(input, 'title', '', true)
   checkString(input, 'description', '', false)
-  checkLayout(input, '')
   checkMeta(input, '')
   checkUnknown(input, DOCUMENT_FIELDS, '')
 
@@ -119,7 +118,7 @@ export function validateDocument(input: unknown): ValidationResult {
       checkString(block, 'description', bp, false)
       checkString(block, 'details', bp, false)
       checkString(block, 'icon', bp, false)
-      checkLayout(block, bp)
+      checkSize(block, bp)
       checkMeta(block, bp)
       checkUnknown(block, BLOCK_FIELDS, bp)
 

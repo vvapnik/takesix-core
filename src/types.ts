@@ -1,5 +1,9 @@
-/** How the children of a block (or the document's top level) are arranged on screen. */
-export type Layout = 'tiles' | 'list' | 'circle'
+/**
+ * Width of a block on its level: `S` a third, `M` a half (the default),
+ * `L` two thirds, `F` the full width. Blocks flow left to right and wrap,
+ * so six `F` blocks make a list and three `S` blocks a row of tiles.
+ */
+export type Size = 'S' | 'M' | 'L' | 'F'
 
 /** Free-form extension data. Core never interprets it, but keeps it intact. */
 export type Meta = Record<string, unknown>
@@ -19,8 +23,8 @@ export interface Block {
   details?: string
   /** An emoji or a single character. */
   icon?: string
-  /** Layout of this block's children. */
-  layout?: Layout
+  /** Width on its level; `M` when absent. */
+  size?: Size
   children?: Block[]
   meta?: Meta
 }
@@ -51,8 +55,6 @@ export interface TakeSixDocument {
   $schema?: string
   title: string
   description?: string
-  /** Layout of the top level. */
-  layout?: Layout
   /** Top-level blocks. */
   blocks: Block[]
   links?: Link[]

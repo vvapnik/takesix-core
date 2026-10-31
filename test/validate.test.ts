@@ -53,7 +53,8 @@ describe('validateDocument', () => {
     expect(codes({ takesix: '1.0', title: 'T', blocks: [{ id: 'a' }] })).toEqual(['missing-field'])
     expect(codes({ takesix: '1.0', title: 'T', blocks: [{ id: 'a', title: '  ' }] })).toEqual(['invalid-value'])
     expect(codes({ takesix: '1.0', title: 'T', blocks: [{ id: 1, title: 'A' }] })).toEqual(['invalid-type'])
-    expect(codes({ takesix: '1.0', title: 'T', blocks: [{ id: 'a', title: 'A', layout: 'grid' }] })).toEqual(['invalid-value'])
+    expect(codes({ takesix: '1.0', title: 'T', blocks: [{ id: 'a', title: 'A', size: 'XL' }] })).toEqual(['invalid-value'])
+    expect(validateDocument({ takesix: '1.0', title: 'T', blocks: [{ id: 'a', title: 'A', size: 'F' }] }).valid).toBe(true)
     expect(codes({ takesix: '1.0', title: 'T', blocks: [{ id: 'a', title: 'A', children: {} }] })).toEqual(['invalid-type'])
   })
 
