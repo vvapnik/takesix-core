@@ -4,6 +4,11 @@ Format and core logic of **takesix**: diagrams and presentations that stay
 readable because one screen never holds more than **6 blocks**. Each block can
 open into up to 6 more, as deep as needed, with links between any of them.
 
+**Made for AI agents.** Instead of a long wall of text, an agent answers with a
+takesix diagram: the gist on one screen, the depth one click away. The format is
+small and strict, and the JSON Schema plus `validateDocument` let you check an
+agent's answer before anyone reads it.
+
 This package has no dependencies and no UI. It defines the JSON format,
 validates and migrates documents, edits them immutably, and works out which
 links to draw on each screen. Viewers and editors (such as `@takesix/react`)
