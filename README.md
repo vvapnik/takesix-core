@@ -72,6 +72,11 @@ npm test
 npm run build
 ```
 
+## AI-assisted development
+
+This project is developed with the help of [Claude Code](https://claude.com/claude-code)
+(Anthropic). Commits are authored and reviewed by the maintainer.
+
 ## License
 
 [MIT](LICENSE)
