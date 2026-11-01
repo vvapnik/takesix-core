@@ -50,7 +50,11 @@ history drives versioning and the changelog, so please follow it.
 ### Scopes
 
 `format`, `schema`, `validate`, `parse`, `migrate`, `edit`, `links`, `query`,
-`deps`. Leave the scope out when a change touches the whole package.
+`deps`, and `release` for version bumps (`chore(release): 1.2.0`). Leave the
+scope out when a change touches the whole package.
+
+CI checks every pushed commit with commitlint (`commitlint.config.js`). To
+check yours before pushing: `npx commitlint --from origin/main`.
 
 ### Breaking changes
 
