@@ -10,8 +10,8 @@ small and strict, and the JSON Schema plus `validateDocument` let you check an
 agent's answer before anyone reads it.
 
 This package has no dependencies and no UI. It defines the JSON format,
-validates and migrates documents, edits them immutably, and works out which
-links to draw on each screen. Viewers and editors (such as `@takesix/react`)
+validates documents, places blocks on each level's 6×6 grid, edits them
+immutably, and works out which links to draw on each screen. Viewers and editors (such as `@takesix/react`)
 build on it.
 
 - Format specification: [FORMAT.md](FORMAT.md)
@@ -29,16 +29,17 @@ npm install @takesix/core
 ```ts
 import {
   parseDocument, serializeDocument, formatIssues,
-  addBlock, addLink, groupBlocks, getLevel, visibleLinks,
+  addBlock, addLink, groupBlocks, getLevel, visibleLinks, lintLayout,
 } from '@takesix/core'
 
-// Read: parse + migrate older formats + validate. Never throws.
+// Read: parse + validate. Never throws.
 const result = parseDocument(jsonText)
 if (!result.ok) throw new Error(formatIssues(result.issues))
 let doc = result.document
 
 // Edit: every helper returns a new document and leaves the old one untouched.
-const added = addBlock(doc, 'api', { title: 'Payments', icon: '💳' })
+// Without `at`, a new block goes to the first free place on the grid.
+const added = addBlock(doc, 'api', { title: 'Payments', icon: '💳', at: 'A2:C2' })
 doc = added.document
 doc = addLink(doc, { from: added.block.id, to: 'db', label: 'SQL' }).document
 
@@ -50,6 +51,9 @@ doc = groupBlocks(doc, ['auth', 'orders'], { title: 'Business logic' }).document
 const blocks = getLevel(doc, 'api')
 const arrows = visibleLinks(doc, 'api')
 
+// Layout advice: arrows through other blocks, crossing arrows.
+const advice = lintLayout(doc)
+
 const json = serializeDocument(doc)
 ```
 
@@ -58,11 +62,11 @@ const json = serializeDocument(doc)
 | Area | Functions |
 |---|---|
 | Read / write | `parseDocument`, `serializeDocument`, `validateDocument`, `formatIssues` |
-| Migration | `migrateLegacy`, `isLegacyDocument` |
+| Grid | `parseArea`, `readArea`, `formatArea`, `overlap`, `fitsGrid`, `findPlace`, `levelAreas`, `readingOrder`, `lintLayout` |
 | Queries | `findBlock`, `getPath`, `getLevel`, `canAddBlock`, `buildIndex` |
 | Blocks | `createDocument`, `addBlock`, `updateBlock`, `removeBlock`, `moveBlock`, `groupBlocks`, `ungroupBlock` |
 | Links | `addLink`, `updateLink`, `removeLink`, `visibleLinks` |
-| Misc | `createId`, `TakeSixError`, `MAX_BLOCKS_PER_LEVEL`, `FORMAT_VERSION` |
+| Misc | `createId`, `TakeSixError`, `MAX_BLOCKS_PER_LEVEL`, `GRID_SIZE`, `FORMAT_VERSION` |
 
 Query helpers accept an optional prebuilt `buildIndex(doc)` to avoid
 re-walking the tree when rendering many things from one document.

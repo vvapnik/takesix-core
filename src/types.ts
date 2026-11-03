@@ -1,10 +1,3 @@
-/**
- * Width of a block on its level: `S` a third, `M` a half (the default),
- * `L` two thirds, `F` the full width. Blocks flow left to right and wrap,
- * so six `F` blocks make a list and three `S` blocks a row of tiles.
- */
-export type Size = 'S' | 'M' | 'L' | 'F'
-
 /** Free-form extension data. Core never interprets it, but keeps it intact. */
 export type Meta = Record<string, unknown>
 
@@ -23,8 +16,12 @@ export interface Block {
   details?: string
   /** An emoji or a single character. */
   icon?: string
-  /** Width on its level; `M` when absent. */
-  size?: Size
+  /**
+   * Where the block sits on its level's 6×6 grid: one cell (`"B3"`) or a
+   * range with both corners included (`"A1:C2"`). Columns `A`–`F`, rows
+   * `1`–`6`. Blocks of one level never overlap.
+   */
+  at: string
   children?: Block[]
   meta?: Meta
 }

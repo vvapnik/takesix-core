@@ -1,4 +1,3 @@
-import { isLegacyDocument, migrateLegacy } from './migrate.js'
 import type { TakeSixDocument } from './types.js'
 import { validateDocument, type ValidationIssue } from './validate.js'
 
@@ -8,14 +7,12 @@ export type ParseResult =
       document: TakeSixDocument
       /** Warnings only. */
       issues: ValidationIssue[]
-      /** Set when the input was in an older format and was converted. */
-      migratedFrom?: 'legacy'
     }
   | { ok: false; issues: ValidationIssue[] }
 
 /**
- * Reads a document from JSON text or an already parsed value: parses,
- * migrates older formats and validates. Never throws.
+ * Reads a document from JSON text or an already parsed value: parses and
+ * validates. Never throws.
  */
 export function parseDocument(input: string | unknown): ParseResult {
   let value: unknown = input
@@ -28,17 +25,9 @@ export function parseDocument(input: string | unknown): ParseResult {
     }
   }
 
-  let migratedFrom: 'legacy' | undefined
-  if (isLegacyDocument(value)) {
-    value = migrateLegacy(value)
-    migratedFrom = 'legacy'
-  }
-
   const { valid, issues } = validateDocument(value)
   if (!valid) return { ok: false, issues }
-  const result: ParseResult = { ok: true, document: value as TakeSixDocument, issues }
-  if (migratedFrom) result.migratedFrom = migratedFrom
-  return result
+  return { ok: true, document: value as TakeSixDocument, issues }
 }
 
 /** Serializes a document to JSON text (pretty-printed by default). */

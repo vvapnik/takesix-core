@@ -1,0 +1,31 @@
+{
+  "$schema": "https://raw.githubusercontent.com/vvapnik/takesix-core/main/schema/takesix-1.0.schema.json",
+  "takesix": "1.0",
+  "title": "Product launch",
+  "description": "Three steps in a row, the launch itself under the last one, what follows below",
+  "blocks": [
+    {
+      "id": "build", "at": "A1:B1", "icon": "🛠", "title": "Build",
+      "description": "Finish the beta",
+      "children": [
+        { "id": "build-scope", "at": "A1:F1", "title": "Freeze the scope" },
+        { "id": "build-fix", "at": "A2:F2", "title": "Fix the top bugs" },
+        { "id": "build-docs", "at": "A3:F3", "title": "Write the docs" }
+      ]
+    },
+    { "id": "test", "at": "C1:D1", "icon": "🧪", "title": "Test", "description": "Closed beta, 50 users" },
+    { "id": "prepare", "at": "E1:F1", "icon": "📣", "title": "Prepare", "description": "Site, pricing, announcement" },
+    {
+      "id": "launch", "at": "C2:F2", "icon": "🚀", "title": "Launch day",
+      "description": "Open sign-up, post the announcement, watch the dashboards"
+    },
+    { "id": "support", "at": "A3:C3", "icon": "💬", "title": "Support", "description": "Answer within a day" },
+    { "id": "learn", "at": "D3:F3", "icon": "📊", "title": "Learn", "description": "Interviews and usage data" }
+  ],
+  "links": [
+    { "id": "l1", "from": "build", "to": "test" },
+    { "id": "l2", "from": "test", "to": "prepare" },
+    { "id": "l3", "from": "prepare", "to": "launch" },
+    { "id": "l4", "from": "launch", "to": "learn" }
+  ]
+}

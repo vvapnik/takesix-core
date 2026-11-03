@@ -1,0 +1,70 @@
+{
+  "$schema": "https://raw.githubusercontent.com/vvapnik/takesix-core/main/schema/takesix-1.0.schema.json",
+  "takesix": "1.0",
+  "title": "SaaS app: request path",
+  "description": "Read left to right: a request leaves the client, passes the edge and branches out. Open any block for the next branch.",
+  "blocks": [
+    {
+      "id": "clients", "at": "A3", "icon": "📱", "title": "Clients",
+      "description": "Web and mobile",
+      "children": [
+        { "id": "web", "at": "A1", "icon": "🖥", "title": "Web app", "description": "React SPA" },
+        { "id": "mobile", "at": "A3", "icon": "📱", "title": "Mobile apps", "description": "iOS and Android" },
+        { "id": "sdk", "at": "C2", "icon": "🔌", "title": "API client", "description": "Shared, generated from OpenAPI" }
+      ]
+    },
+    {
+      "id": "edge", "at": "C3", "icon": "🌐", "title": "Edge",
+      "description": "CDN, TLS, routing",
+      "children": [
+        { "id": "tls", "at": "A3", "icon": "🔒", "title": "TLS", "description": "Certificates, HTTP/2" },
+        { "id": "router", "at": "C3", "icon": "🔀", "title": "Router", "description": "Rate limits, rules" },
+        { "id": "route-api", "at": "E1", "title": "/api", "description": "To the backend" },
+        { "id": "route-login", "at": "E3", "title": "/login", "description": "To auth" },
+        { "id": "route-static", "at": "E5", "title": "/*", "description": "Cached files" }
+      ]
+    },
+    {
+      "id": "app", "at": "E1", "icon": "⚙️", "title": "Backend",
+      "description": "API and its modules",
+      "children": [
+        { "id": "api", "at": "A2", "icon": "⚙️", "title": "API", "description": "REST" },
+        { "id": "projects", "at": "C1", "title": "Projects", "description": "Core domain" },
+        { "id": "billing", "at": "C3", "title": "Billing", "description": "Plans, invoices" },
+        { "id": "postgres", "at": "E1", "icon": "🗄", "title": "Postgres", "description": "Main database" },
+        { "id": "stripe", "at": "E3", "icon": "💳", "title": "Stripe", "description": "Payments" }
+      ]
+    },
+    {
+      "id": "auth", "at": "E3", "icon": "🔑", "title": "Auth",
+      "description": "Sign-in, tokens",
+      "children": [
+        { "id": "password", "at": "A1", "title": "Password", "description": "Email and password" },
+        { "id": "oauth", "at": "A3", "title": "OAuth", "description": "Google, GitHub" },
+        { "id": "tokens", "at": "C2", "icon": "🎫", "title": "Tokens", "description": "Short-lived JWT" }
+      ]
+    },
+    {
+      "id": "static", "at": "E5", "icon": "📦", "title": "Static files",
+      "description": "S3 behind the CDN"
+    }
+  ],
+  "links": [
+    { "id": "l1", "from": "web", "to": "sdk" },
+    { "id": "l2", "from": "mobile", "to": "sdk" },
+    { "id": "l3", "from": "sdk", "to": "tls", "label": "HTTPS" },
+    { "id": "l4", "from": "tls", "to": "router" },
+    { "id": "l5", "from": "router", "to": "route-api" },
+    { "id": "l6", "from": "router", "to": "route-login" },
+    { "id": "l7", "from": "router", "to": "route-static" },
+    { "id": "l8", "from": "route-api", "to": "api" },
+    { "id": "l9", "from": "route-login", "to": "password" },
+    { "id": "l10", "from": "route-static", "to": "static" },
+    { "id": "l11", "from": "api", "to": "projects" },
+    { "id": "l12", "from": "api", "to": "billing" },
+    { "id": "l13", "from": "projects", "to": "postgres", "label": "SQL" },
+    { "id": "l14", "from": "billing", "to": "stripe" },
+    { "id": "l15", "from": "password", "to": "tokens" },
+    { "id": "l16", "from": "oauth", "to": "tokens" }
+  ]
+}

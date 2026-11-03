@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/vvapnik/takesix-core/main/schema/takesix-1.0.schema.json",
   "title": "takesix document",
-  "description": "A diagram split into levels of at most 6 blocks. Structural rules that JSON Schema cannot express (unique ids, existing link endpoints) are checked by validateDocument() in @takesix/core.",
+  "description": "A diagram split into levels of at most 6 blocks. Structural rules that JSON Schema cannot express (unique ids, existing link endpoints, blocks that overlap) are checked by validateDocument() in @takesix/core.",
   "type": "object",
   "required": [
     "takesix",
@@ -40,15 +40,10 @@
     }
   },
   "$defs": {
-    "size": {
-      "enum": [
-        "S",
-        "M",
-        "L",
-        "F"
-      ],
-      "default": "M",
-      "description": "Width on its level: S a third, M a half, L two thirds, F the full width."
+    "area": {
+      "type": "string",
+      "pattern": "^[A-F][1-6](:[A-F][1-6])?$",
+      "description": "Place on the level's 6×6 grid: one cell (\"B3\") or a range with both corners included (\"A1:C2\"). Columns A–F, rows 1–6, top-left corner first. Blocks of one level must not overlap."
     },
     "meta": {
       "type": "object",
@@ -65,7 +60,8 @@
       "type": "object",
       "required": [
         "id",
-        "title"
+        "title",
+        "at"
       ],
       "additionalProperties": false,
       "properties": {
@@ -89,8 +85,8 @@
         "icon": {
           "type": "string"
         },
-        "size": {
-          "$ref": "#/$defs/size"
+        "at": {
+          "$ref": "#/$defs/area"
         },
         "children": {
           "$ref": "#/$defs/blocks"

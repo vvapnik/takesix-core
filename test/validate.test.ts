@@ -27,14 +27,15 @@ describe('validateDocument', () => {
   it('enforces at most six blocks per level, at any depth', () => {
     expect(validateDocument({ takesix: '1.0', title: 'T', blocks: blocks(6) }).valid).toBe(true)
 
-    const top = validateDocument({ takesix: '1.0', title: 'T', blocks: blocks(7) })
-    expect(top.issues).toMatchObject([{ code: 'too-many-blocks', path: '/blocks' }])
+    const seven = [...blocks(6), { id: 'b6', title: 'Block 6', at: 'A1' }]
+    const top = validateDocument({ takesix: '1.0', title: 'T', blocks: seven })
+    expect(top.issues.filter(i => i.code !== 'overlap')).toMatchObject([{ code: 'too-many-blocks', path: '/blocks' }])
 
     const nested = validateDocument({
       takesix: '1.0', title: 'T',
-      blocks: [{ id: 'p', title: 'P', children: blocks(7, 'c') }],
+      blocks: [{ id: 'p', title: 'P', at: 'A1', children: blocks(6, 'c').concat({ id: 'c6', title: 'C', at: 'A6' }) }],
     })
-    expect(nested.issues).toMatchObject([{ code: 'too-many-blocks', path: '/blocks/0/children' }])
+    expect(nested.issues.filter(i => i.code !== 'overlap')).toMatchObject([{ code: 'too-many-blocks', path: '/blocks/0/children' }])
   })
 
   it('reports duplicate block ids across levels', () => {
@@ -50,18 +51,47 @@ describe('validateDocument', () => {
   })
 
   it('checks block fields', () => {
-    expect(codes({ takesix: '1.0', title: 'T', blocks: [{ id: 'a' }] })).toEqual(['missing-field'])
-    expect(codes({ takesix: '1.0', title: 'T', blocks: [{ id: 'a', title: '  ' }] })).toEqual(['invalid-value'])
-    expect(codes({ takesix: '1.0', title: 'T', blocks: [{ id: 1, title: 'A' }] })).toEqual(['invalid-type'])
-    expect(codes({ takesix: '1.0', title: 'T', blocks: [{ id: 'a', title: 'A', size: 'XL' }] })).toEqual(['invalid-value'])
-    expect(validateDocument({ takesix: '1.0', title: 'T', blocks: [{ id: 'a', title: 'A', size: 'F' }] }).valid).toBe(true)
-    expect(codes({ takesix: '1.0', title: 'T', blocks: [{ id: 'a', title: 'A', children: {} }] })).toEqual(['invalid-type'])
+    expect(codes({ takesix: '1.0', title: 'T', blocks: [{ id: 'a', at: 'A1' }] })).toEqual(['missing-field'])
+    expect(codes({ takesix: '1.0', title: 'T', blocks: [{ id: 'a', title: '  ', at: 'A1' }] })).toEqual(['invalid-value'])
+    expect(codes({ takesix: '1.0', title: 'T', blocks: [{ id: 1, title: 'A', at: 'A1' }] })).toEqual(['invalid-type'])
+    expect(codes({ takesix: '1.0', title: 'T', blocks: [{ id: 'a', title: 'A', at: 'A1', children: {} }] })).toEqual(['invalid-type'])
   })
 
-  it('warns about unknown fields without failing', () => {
-    const result = validateDocument({ takesix: '1.0', title: 'T', blocks: [{ id: 'a', title: 'A', colour: 'red' }] })
+  it('requires a place on the grid', () => {
+    const one = (block: object) => validateDocument({ takesix: '1.0', title: 'T', blocks: [{ id: 'a', title: 'A', ...block }] })
+    expect(one({ at: 'B3' }).valid).toBe(true)
+    expect(one({ at: 'A1:F6' }).valid).toBe(true)
+    expect(one({}).issues).toMatchObject([{ code: 'missing-field', path: '/blocks/0' }])
+    expect(one({ at: 3 }).issues).toMatchObject([{ code: 'invalid-type', path: '/blocks/0/at' }])
+    for (const at of ['G1', 'A7', 'A0', 'a1', 'A1:', 'A1:B2:C3', 'A1-B2', '']) {
+      expect(one({ at }).issues, at).toMatchObject([{ code: 'invalid-value', path: '/blocks/0/at' }])
+    }
+    expect(one({ at: 'C2:A1' }).issues[0]!.message).toMatch(/ends before it starts/)
+  })
+
+  it('reports blocks that overlap on one level', () => {
+    const result = validateDocument({
+      takesix: '1.0', title: 'T',
+      blocks: [
+        { id: 'a', title: 'A', at: 'A1:C2' },
+        { id: 'b', title: 'B', at: 'D1:F1' },
+        { id: 'c', title: 'C', at: 'B2:E3' },
+      ],
+    })
+    expect(result.issues).toEqual([{
+      severity: 'error', code: 'overlap', path: '/blocks/2/at', message: 'Blocks "a" and "c" overlap at B2',
+    }])
+    // Blocks of different levels never overlap
+    expect(validateDocument(sampleDoc()).valid).toBe(true)
+  })
+
+  it('warns about unknown fields, the old "size" too, without failing', () => {
+    const result = validateDocument({ takesix: '1.0', title: 'T', blocks: [{ id: 'a', title: 'A', at: 'A1', colour: 'red', size: 'F' }] })
     expect(result.valid).toBe(true)
-    expect(result.issues).toMatchObject([{ severity: 'warning', code: 'unknown-field', path: '/blocks/0/colour' }])
+    expect(result.issues).toMatchObject([
+      { severity: 'warning', code: 'unknown-field', path: '/blocks/0/colour' },
+      { severity: 'warning', code: 'unknown-field', path: '/blocks/0/size' },
+    ])
   })
 
   it('checks link endpoints', () => {

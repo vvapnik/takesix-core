@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_SIZE, LINK_DIRECTIONS, MAX_BLOCKS_PER_LEVEL, SCHEMA_URL, SIZES } from '../src/index.js'
+import { LINK_DIRECTIONS, MAX_BLOCKS_PER_LEVEL, readArea, SCHEMA_URL } from '../src/index.js'
 
 const schema = JSON.parse(readFileSync(new URL('../schema/takesix-1.0.schema.json', import.meta.url), 'utf8'))
 
@@ -10,8 +10,16 @@ describe('JSON Schema', () => {
   it('matches the library constants', () => {
     expect(schema.$id).toBe(SCHEMA_URL)
     expect(schema.$defs.blocks.maxItems).toBe(MAX_BLOCKS_PER_LEVEL)
-    expect(schema.$defs.size.enum).toEqual(SIZES)
-    expect(schema.$defs.size.default).toBe(DEFAULT_SIZE)
+    expect(schema.$defs.block.required).toContain('at')
     expect(schema.$defs.link.properties.direction.enum).toEqual(LINK_DIRECTIONS)
+  })
+
+  it('accepts the same "at" syntax as the validator, apart from corner order', () => {
+    const pattern = new RegExp(schema.$defs.area.pattern)
+    for (const at of ['A1', 'F6', 'A1:C2', 'B2:B2', 'G1', 'A7', 'a1', 'A1:B2:C3', 'A10']) {
+      expect(pattern.test(at), at).toBe(typeof readArea(at) !== 'string')
+    }
+    // A pattern cannot compare corners: the validator rejects this one
+    expect(pattern.test('C2:A1')).toBe(true)
   })
 })

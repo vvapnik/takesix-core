@@ -2,6 +2,6 @@
 export default {
   extends: ['@commitlint/config-conventional'],
   rules: {
-    'scope-enum': [2, 'always', ['format', 'schema', 'validate', 'parse', 'migrate', 'edit', 'links', 'query', 'deps', 'release']],
+    'scope-enum': [2, 'always', ['format', 'schema', 'validate', 'parse', 'grid', 'layout', 'edit', 'links', 'query', 'deps', 'release']],
   },
 }

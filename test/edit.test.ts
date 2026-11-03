@@ -64,14 +64,37 @@ describe('addBlock', () => {
     const doc = sampleDoc()
     const snapshot = JSON.stringify(doc)
 
-    const top = addBlock(doc, null, { id: 'cdn', title: 'CDN' }, { index: 0 })
-    expect(ids(top.document.blocks)).toEqual(['cdn', 'web', 'api', 'db'])
+    const top = addBlock(doc, null, { id: 'cdn', title: 'CDN', at: 'A3:F3' })
+    expect(ids(top.document.blocks)).toEqual(['web', 'api', 'db', 'cdn'])
+    expect(top.block.at).toBe('A3:F3')
 
     const nested = addBlock(doc, 'web', { title: 'SPA' })
     expect(nested.block.id).toMatch(/\w+/)
     expect(getLevel(nested.document, 'web')).toEqual([nested.block])
 
     expect(JSON.stringify(doc)).toBe(snapshot)
+  })
+
+  it('puts a block without "at" in the first free place, half the grid wide', () => {
+    const { block } = addBlock(sampleDoc(), null, { id: 'cdn', title: 'CDN' })
+    expect(block.at).toBe('A3:C3')
+    // Only one column left: the new block gets one cell
+    const narrow = createDocument({ blocks: [{ id: 'big', title: 'Big', at: 'A1:E6' }] })
+    expect(addBlock(narrow, null, { title: 'X' }).block.at).toBe('F1')
+  })
+
+  it('keeps the level in reading order', () => {
+    const { document } = addBlock(sampleDoc(), null, { id: 'top', title: 'Top', at: 'A3' })
+    const moved = updateBlock(document, 'web', { at: 'A4:F4' })
+    expect(ids(moved.blocks)).toEqual(['api', 'db', 'top', 'web'])
+  })
+
+  it('refuses a bad or taken place, and a full grid', () => {
+    expectError(() => addBlock(sampleDoc(), null, { title: 'X', at: 'B1' }), 'overlap')
+    expectError(() => addBlock(sampleDoc(), null, { title: 'X', at: 'G1' }), 'invalid-area')
+    expectError(() => addBlock(sampleDoc(), null, { title: 'X', at: 'C3:A3' }), 'invalid-area')
+    const full = createDocument({ blocks: [{ id: 'big', title: 'Big', at: 'A1:F6' }] })
+    expectError(() => addBlock(full, null, { title: 'X' }), 'no-room')
   })
 
   it('shares untouched subtrees', () => {
@@ -83,14 +106,14 @@ describe('addBlock', () => {
   })
 
   it('refuses a seventh block', () => {
-    const doc = createDocument({ blocks: blocks(6) })
+    const doc = createDocument({ blocks: blocks(5).concat({ id: 'b5', title: 'Last', at: 'A6' }) })
     expectError(() => addBlock(doc, null, { title: 'One too many' }), 'too-many-blocks')
   })
 
   it('refuses duplicate ids, including inside the new subtree', () => {
     const doc = sampleDoc()
     expectError(() => addBlock(doc, null, { id: 'auth', title: 'Dup' }), 'duplicate-id')
-    expectError(() => addBlock(doc, null, { id: 'new', title: 'N', children: [{ id: 'db', title: 'Dup' }] }), 'duplicate-id')
+    expectError(() => addBlock(doc, null, { id: 'new', title: 'N', children: [{ id: 'db', title: 'Dup', at: 'A1' }] }), 'duplicate-id')
   })
 
   it('fails on an unknown parent', () => {
@@ -101,9 +124,19 @@ describe('addBlock', () => {
 describe('updateBlock', () => {
   it('changes fields and removes those set to undefined', () => {
     let doc = updateBlock(sampleDoc(), 'auth', { description: 'OAuth', icon: '🔑' })
-    expect(findBlock(doc, 'auth')).toEqual({ id: 'auth', title: 'Auth', description: 'OAuth', icon: '🔑' })
+    expect(findBlock(doc, 'auth')).toEqual({ id: 'auth', title: 'Auth', at: 'A1:B1', description: 'OAuth', icon: '🔑' })
     doc = updateBlock(doc, 'auth', { icon: undefined })
-    expect(findBlock(doc, 'auth')).toEqual({ id: 'auth', title: 'Auth', description: 'OAuth' })
+    expect(findBlock(doc, 'auth')).toEqual({ id: 'auth', title: 'Auth', at: 'A1:B1', description: 'OAuth' })
+  })
+
+  it('moves a block on its grid only to a free place', () => {
+    const doc = updateBlock(sampleDoc(), 'db', { at: 'A3:F4' })
+    expect(findBlock(doc, 'db')?.at).toBe('A3:F4')
+    // Its own old cells do not count as taken
+    expect(findBlock(updateBlock(sampleDoc(), 'web', { at: 'A1:B1' }), 'web')?.at).toBe('A1:B1')
+    expectError(() => updateBlock(sampleDoc(), 'db', { at: 'C1' }), 'overlap')
+    expectError(() => updateBlock(sampleDoc(), 'db', { at: 'nowhere' }), 'invalid-area')
+    expectError(() => updateBlock(sampleDoc(), 'db', { at: undefined }), 'invalid-area')
   })
 
   it('fails on an unknown block', () => {
@@ -123,25 +156,36 @@ describe('removeBlock', () => {
   it('drops the empty children array and links array', () => {
     let doc = removeBlock(sampleDoc(), 'orders-svc')
     doc = removeBlock(doc, 'orders-queue')
-    expect(findBlock(doc, 'orders')).toEqual({ id: 'orders', title: 'Orders' })
+    expect(findBlock(doc, 'orders')).toEqual({ id: 'orders', title: 'Orders', at: 'C1:F1' })
 
-    const bare = removeBlock(createDocument({ blocks: [{ id: 'a', title: 'A' }, { id: 'b', title: 'B' }], links: [{ id: 'x', from: 'a', to: 'b' }] }), 'a')
+    const bare = removeBlock(createDocument({ blocks: blocks(2), links: [{ id: 'x', from: 'b0', to: 'b1' }] }), 'b0')
     expect(bare).not.toHaveProperty('links')
   })
 })
 
 describe('moveBlock', () => {
   it('moves a block with its subtree and keeps links', () => {
-    const doc = moveBlock(sampleDoc(), 'orders', null, { index: 1 })
-    expect(ids(doc.blocks)).toEqual(['web', 'orders', 'api', 'db'])
+    const doc = moveBlock(sampleDoc(), 'orders', null)
+    // C1:F1 is taken on the top level: first free place of the same width
+    expect(findBlock(doc, 'orders')?.at).toBe('A3:D3')
+    expect(ids(doc.blocks)).toEqual(['web', 'api', 'db', 'orders'])
     expect(ids(getLevel(doc, 'api'))).toEqual(['auth'])
     expect(ids(getLevel(doc, 'orders'))).toEqual(['orders-svc', 'orders-queue'])
     expect(doc.links).toHaveLength(5)
+    expect(validateDocument(doc).valid).toBe(true)
   })
 
-  it('reorders within the same level', () => {
-    const doc = moveBlock(sampleDoc(), 'db', null, { index: 0 })
-    expect(ids(doc.blocks)).toEqual(['db', 'web', 'api'])
+  it('keeps the place when it is free, or takes the given one', () => {
+    expect(findBlock(moveBlock(sampleDoc(), 'auth', null, {}), 'auth')?.at).toBe('A3:B3')
+    expect(findBlock(moveBlock(sampleDoc(), 'web', 'orders'), 'web')?.at).toBe('A2:C2')
+    expect(findBlock(moveBlock(sampleDoc(), 'auth', null, { at: 'E3:F3' }), 'auth')?.at).toBe('E3:F3')
+    expectError(() => moveBlock(sampleDoc(), 'auth', null, { at: 'A2' }), 'overlap')
+  })
+
+  it('moves within the same level with "at"', () => {
+    const doc = moveBlock(sampleDoc(), 'web', null, { at: 'A3:C3' })
+    expect(ids(doc.blocks)).toEqual(['api', 'db', 'web'])
+    expect(moveBlock(sampleDoc(), 'web', null)).toEqual(sampleDoc())
   })
 
   it('refuses to move a block into itself or its descendant', () => {
@@ -150,18 +194,33 @@ describe('moveBlock', () => {
   })
 
   it('refuses to overfill the target level', () => {
-    const doc = createDocument({ blocks: [...blocks(5), { id: 'p', title: 'P', children: blocks(6, 'c') }] })
+    const doc = createDocument({ blocks: [...blocks(5), { id: 'p', title: 'P', at: 'A6', children: blocks(6, 'c') }] })
     expectError(() => moveBlock(doc, 'b0', 'p'), 'too-many-blocks')
   })
 })
 
 describe('groupBlocks / ungroupBlock', () => {
-  it('wraps siblings into a new parent where the first one was', () => {
+  it('covers the members with the group when nothing else is in the way', () => {
+    const doc = createDocument({ blocks: blocks(6) })
+    const { document, block } = groupBlocks(doc, ['b2', 'b1'], { id: 'g', title: 'Group' })
+    expect(block.at).toBe('A2:F3')
+    expect(ids(document.blocks)).toEqual(['b0', 'g', 'b3', 'b4', 'b5'])
+    // Members keep their arrangement, moved to the corner
+    expect(block.children).toEqual([
+      { id: 'b1', title: 'Block 1', at: 'A1:F1' },
+      { id: 'b2', title: 'Block 2', at: 'A2:F2' },
+    ])
+    expect(validateDocument(document).valid).toBe(true)
+  })
+
+  it('takes the place of the first member when another block is in the way', () => {
     const doc = createDocument({ blocks: blocks(6) })
     const { document, block } = groupBlocks(doc, ['b4', 'b2'], { id: 'g', title: 'Group' })
+    expect(block.at).toBe('A3:F3')
     expect(ids(document.blocks)).toEqual(['b0', 'b1', 'g', 'b3', 'b5'])
-    expect(ids(block.children!)).toEqual(['b2', 'b4'])
+    expect(block.children!.map(c => c.at)).toEqual(['A1:F1', 'A3:F3'])
     expect(canAddBlock(document, null)).toBe(true)
+    expect(groupBlocks(doc, ['b4', 'b2'], { title: 'G', at: 'A5:B5' }).block.at).toBe('A5:B5')
   })
 
   it('only groups siblings', () => {
@@ -169,16 +228,19 @@ describe('groupBlocks / ungroupBlock', () => {
     expectError(() => groupBlocks(sampleDoc(), [], { title: 'G' }), 'invalid-move')
   })
 
-  it('ungroup restores the children in place and drops links of the group', () => {
+  it('ungroup puts the children where the group was and drops links of the group', () => {
     let doc = sampleDoc()
     doc = addLink(doc, { id: 'to-api', from: 'db', to: 'api' }).document
     doc = ungroupBlock(doc, 'api')
-    expect(ids(doc.blocks)).toEqual(['web', 'auth', 'orders', 'db'])
+    // auth fits at D1:E1; orders (4 wide) does not fit next to it and goes to a free row
+    expect(ids(doc.blocks)).toEqual(['web', 'auth', 'db', 'orders'])
+    expect(doc.blocks.map(b => b.at)).toEqual(['A1:C1', 'D1:E1', 'A2:F2', 'A3:D3'])
     expect(doc.links!.map(l => l.id)).toEqual(['l2', 'l3', 'l4', 'l5'])
+    expect(validateDocument(doc).valid).toBe(true)
   })
 
   it('ungroup refuses to overfill the level', () => {
-    const doc = createDocument({ blocks: [...blocks(5), { id: 'p', title: 'P', children: blocks(2, 'c') }] })
+    const doc = createDocument({ blocks: [...blocks(5), { id: 'p', title: 'P', at: 'A6', children: blocks(2, 'c') }] })
     expectError(() => ungroupBlock(doc, 'p'), 'too-many-blocks')
   })
 })

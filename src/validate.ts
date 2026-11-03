@@ -1,4 +1,5 @@
-import { LINK_DIRECTIONS, MAX_BLOCKS_PER_LEVEL, SIZES, SUPPORTED_MAJOR } from './constants.js'
+import { LINK_DIRECTIONS, MAX_BLOCKS_PER_LEVEL, SUPPORTED_MAJOR } from './constants.js'
+import { overlap, readArea, type Area } from './grid.js'
 import { buildIndex } from './tree-index.js'
 import type { TakeSixDocument } from './types.js'
 
@@ -16,6 +17,9 @@ export type IssueCode =
   | 'link-never-visible'
   | 'invalid-value'
   | 'unknown-field'
+  | 'overlap'
+  | 'arrow-crosses-block'
+  | 'arrows-cross'
 
 export interface ValidationIssue {
   severity: IssueSeverity
@@ -32,7 +36,7 @@ export interface ValidationResult {
 }
 
 const DOCUMENT_FIELDS = ['takesix', '$schema', 'title', 'description', 'blocks', 'links', 'meta']
-const BLOCK_FIELDS = ['id', 'title', 'description', 'details', 'icon', 'size', 'children', 'meta']
+const BLOCK_FIELDS = ['id', 'title', 'description', 'details', 'icon', 'at', 'children', 'meta']
 const LINK_FIELDS = ['id', 'from', 'to', 'label', 'description', 'direction', 'meta']
 
 type Obj = Record<string, unknown>
@@ -65,10 +69,22 @@ export function validateDocument(input: unknown): ValidationResult {
     }
   }
 
-  const checkSize = (obj: Obj, path: string) => {
-    if (obj.size !== undefined && !SIZES.includes(obj.size as never)) {
-      error('invalid-value', `${path}/size`, `"size" must be one of: ${SIZES.join(', ')}`)
+  // Area of a block on its level, or undefined when `at` is missing or malformed (reported here).
+  const checkArea = (obj: Obj, path: string): Area | undefined => {
+    if (obj.at === undefined) {
+      error('missing-field', path, '"at" is required: the block\'s cell or range on the 6×6 grid, like "A1:C2"')
+      return undefined
     }
+    if (typeof obj.at !== 'string') {
+      error('invalid-type', `${path}/at`, '"at" must be a string like "A1:C2"')
+      return undefined
+    }
+    const area = readArea(obj.at)
+    if (typeof area === 'string') {
+      error('invalid-value', `${path}/at`, area)
+      return undefined
+    }
+    return area
   }
 
   const checkMeta = (obj: Obj, path: string) => {
@@ -107,6 +123,7 @@ export function validateDocument(input: unknown): ValidationResult {
       error('too-many-blocks', path,
         `${value.length} blocks on one level, at most ${MAX_BLOCKS_PER_LEVEL} allowed. Group some of them into a parent block.`)
     }
+    const placed: Array<{ id: unknown; area: Area }> = []
     value.forEach((block, i) => {
       const bp = `${path}/${i}`
       if (!isObject(block)) {
@@ -118,7 +135,15 @@ export function validateDocument(input: unknown): ValidationResult {
       checkString(block, 'description', bp, false)
       checkString(block, 'details', bp, false)
       checkString(block, 'icon', bp, false)
-      checkSize(block, bp)
+      const area = checkArea(block, bp)
+      if (area) {
+        const other = placed.find(p => overlap(p.area, area))
+        if (other) {
+          error('overlap', `${bp}/at`,
+            `Blocks "${String(other.id)}" and "${String(block.id)}" overlap at ${overlap(other.area, area)}`)
+        }
+        placed.push({ id: block.id, area })
+      }
       checkMeta(block, bp)
       checkUnknown(block, BLOCK_FIELDS, bp)
 

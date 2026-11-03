@@ -4,6 +4,9 @@ export type TakeSixErrorCode =
   | 'duplicate-id'
   | 'invalid-move'
   | 'invalid-link'
+  | 'invalid-area'
+  | 'overlap'
+  | 'no-room'
 
 /** Thrown by the editing helpers when an operation would break the document. */
 export class TakeSixError extends Error {

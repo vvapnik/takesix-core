@@ -49,7 +49,7 @@ history drives versioning and the changelog, so please follow it.
 
 ### Scopes
 
-`format`, `schema`, `validate`, `parse`, `migrate`, `edit`, `links`, `query`,
+`format`, `schema`, `validate`, `parse`, `grid`, `layout`, `edit`, `links`, `query`,
 `deps`, and `release` for version bumps (`chore(release): 1.2.0`). Leave the
 scope out when a change touches the whole package.
 
