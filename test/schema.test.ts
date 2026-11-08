@@ -12,6 +12,8 @@ describe('JSON Schema', () => {
     expect(schema.$defs.blocks.maxItems).toBe(MAX_BLOCKS_PER_LEVEL)
     expect(schema.$defs.block.required).toContain('at')
     expect(schema.$defs.link.properties.direction.enum).toEqual(LINK_DIRECTIONS)
+    // A block opens into blocks or into text
+    expect(schema.$defs.block.not.required).toEqual(['children', 'details'])
   })
 
   it('accepts the same "at" syntax as the validator, apart from corner order', () => {

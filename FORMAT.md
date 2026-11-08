@@ -2,7 +2,8 @@
 
 A takesix document describes a diagram as a tree of **blocks**. One screen
 shows one level of the tree, and **a level never holds more than 6 blocks**.
-Opening a block shows its children, again at most 6. **Links** connect blocks,
+Opening a block shows its children, again at most 6, or, for a block with
+text instead of children, that text. **Links** connect blocks,
 on the same level or across levels.
 
 The format is plain JSON. A machine-readable definition lives in
@@ -58,11 +59,29 @@ listed below and checked by `validateDocument()` in `@takesix/core`.
 | `id` | string | yes | Non-empty, unique across the whole document. |
 | `title` | string | yes | Non-empty. Shown on the card. |
 | `at` | string | yes | Place on the level's grid: `"B3"` or `"A1:C2"`, see [Grid](#grid). |
-| `description` | string | | Short plain text shown on the card. |
-| `details` | string | | Long Markdown text shown in the details panel. |
+| `description` | string | | Short plain text shown on the card and in the header of the opened block. |
+| `details` | string | | Long Markdown text the block opens into. Never together with `children`. |
 | `icon` | string | | An emoji or a single character. |
-| `children` | Block[] | | At most 6. |
+| `children` | Block[] | | At most 6. Never together with `details`. |
 | `meta` | object | | Extension data. |
+
+**A block opens into blocks or into text.** A block with `children` opens
+into a screen of child blocks; a block with `details` opens into a screen
+that reads its text, with the block's `title` and `description` on top. A
+block has one or the other (or neither), never both: text about a whole
+level would compete with the blocks below it. Where such text seems needed:
+
+- drop text that only introduces the children: the header and the cards
+  already say it;
+- put a one-line introduction into `description`;
+- move real content into a child block of its own, named for what it says
+  (e.g. "Constraints"), with the text in its `details`, or into the `details`
+  of the children it is about;
+- when the children are small, remove them and fold what they say into the
+  block's `details`.
+
+`details` is a small Markdown subset: headings, paragraphs, `-` and `1.`
+lists, `code`, **bold**, *italic*, fenced code and `https` links.
 
 **Ids are permanent.** Links, comments and collaborative editing refer to
 blocks by id, so tools must never rename or reuse an id. Any non-empty string
@@ -142,6 +161,7 @@ Errors (the document is rejected):
 - `at` that is not a cell or range of the 6×6 grid, or whose second corner
   comes before the first (`"C2:A1"`);
 - two blocks of one level covering the same cell;
+- a block with both `children` and `details`;
 - more than 6 blocks on one level;
 - duplicate block id, duplicate link id;
 - link endpoint that is not a block id;

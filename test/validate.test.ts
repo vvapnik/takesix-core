@@ -9,6 +9,20 @@ describe('validateDocument', () => {
     expect(validateDocument(sampleDoc())).toEqual({ valid: true, issues: [] })
   })
 
+  it('rejects a block with both children and details, and says what to do instead', () => {
+    const doc = {
+      takesix: '1.0', title: 'T',
+      blocks: [{ id: 'p', title: 'P', at: 'A1', details: 'Intro', children: [{ id: 'c', title: 'C', at: 'A1' }] }],
+    }
+    const result = validateDocument(doc)
+    expect(result.valid).toBe(false)
+    expect(result.issues).toMatchObject([{ code: 'details-with-children', path: '/blocks/0/details' }])
+    const message = result.issues[0]!.message
+    for (const way of ['Drop', '"description"', 'child block of its own', 'fold']) expect(message).toContain(way)
+    // Either one alone is fine
+    expect(validateDocument({ ...doc, blocks: [{ id: 'p', title: 'P', at: 'A1', details: 'Text' }] }).valid).toBe(true)
+  })
+
   it('rejects non-objects', () => {
     expect(validateDocument(null).valid).toBe(false)
     expect(validateDocument('x').valid).toBe(false)

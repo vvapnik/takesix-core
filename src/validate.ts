@@ -18,6 +18,7 @@ export type IssueCode =
   | 'invalid-value'
   | 'unknown-field'
   | 'overlap'
+  | 'details-with-children'
   | 'arrow-crosses-block'
   | 'arrows-cross'
 
@@ -40,6 +41,15 @@ const BLOCK_FIELDS = ['id', 'title', 'description', 'details', 'icon', 'at', 'ch
 const LINK_FIELDS = ['id', 'from', 'to', 'label', 'description', 'direction', 'meta']
 
 type Obj = Record<string, unknown>
+
+/** A block opens either into blocks or into text; the ways out, in the order to try them. */
+const DETAILS_WITH_CHILDREN = (id: string) =>
+  `Block "${id}" has both "children" and "details": a block opens either into blocks or into text. ` +
+  'Drop text that only introduces the children (the screen header and the cards already do that); ' +
+  'put a one-line introduction into "description"; ' +
+  'move real content into a child block of its own, named for what it says, with the text in its "details", ' +
+  'or into the "details" of the children it is about; ' +
+  'or, when the children are small, remove them and fold what they say into this block\'s "details"'
 
 const isObject = (v: unknown): v is Obj => typeof v === 'object' && v !== null && !Array.isArray(v)
 
@@ -146,6 +156,9 @@ export function validateDocument(input: unknown): ValidationResult {
       }
       checkMeta(block, bp)
       checkUnknown(block, BLOCK_FIELDS, bp)
+      if (block.children !== undefined && block.details !== undefined) {
+        error('details-with-children', `${bp}/details`, DETAILS_WITH_CHILDREN(String(block.id)))
+      }
 
       if (typeof block.id === 'string' && block.id !== '') {
         const first = seenIds.get(block.id)

@@ -12,7 +12,10 @@ export interface Block {
   title: string
   /** Short plain-text summary shown on the card. */
   description?: string
-  /** Long-form Markdown shown in the details panel. */
+  /**
+   * Long-form Markdown. A block with `details` opens into this text instead
+   * of child blocks, so it never has `children` too.
+   */
   details?: string
   /** An emoji or a single character. */
   icon?: string
@@ -22,6 +25,7 @@ export interface Block {
    * `1`–`6`. Blocks of one level never overlap.
    */
   at: string
+  /** At most 6. Never together with `details`: a block opens into blocks or into text. */
   children?: Block[]
   meta?: Meta
 }

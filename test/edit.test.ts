@@ -144,6 +144,20 @@ describe('updateBlock', () => {
   })
 })
 
+describe('text blocks', () => {
+  it('a block opens into blocks or into text, never both', () => {
+    const text = updateBlock(sampleDoc(), 'web', { details: 'Some **text**' })
+    expectError(() => addBlock(text, 'web', { title: 'X' }), 'text-block')
+    expectError(() => moveBlock(text, 'db', 'web'), 'text-block')
+    expectError(() => updateBlock(sampleDoc(), 'api', { details: 'Intro' }), 'text-block')
+    expectError(() => addBlock(sampleDoc(), null, { title: 'X', details: 'T', children: [] }), 'text-block')
+    expectError(() => groupBlocks(sampleDoc(), ['web'], { title: 'G', details: 'T' }), 'text-block')
+    // Removing the text makes room for blocks again
+    const back = updateBlock(text, 'web', { details: undefined })
+    expect(ids(getLevel(addBlock(back, 'web', { id: 'x', title: 'X' }).document, 'web'))).toEqual(['x'])
+  })
+})
+
 describe('removeBlock', () => {
   it('removes the subtree and every link touching it', () => {
     const doc = removeBlock(sampleDoc(), 'orders')

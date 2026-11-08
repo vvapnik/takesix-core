@@ -80,7 +80,7 @@
         },
         "details": {
           "type": "string",
-          "description": "Long-form Markdown shown in the details panel."
+          "description": "Long-form Markdown. The block opens into this text instead of child blocks, so it cannot have \"children\" too."
         },
         "icon": {
           "type": "string"
@@ -94,6 +94,13 @@
         "meta": {
           "$ref": "#/$defs/meta"
         }
+      },
+      "not": {
+        "required": [
+          "children",
+          "details"
+        ],
+        "description": "A block opens either into child blocks or into text: \"children\" and \"details\" never come together."
       }
     },
     "link": {

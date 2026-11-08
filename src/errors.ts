@@ -7,6 +7,7 @@ export type TakeSixErrorCode =
   | 'invalid-area'
   | 'overlap'
   | 'no-room'
+  | 'text-block'
 
 /** Thrown by the editing helpers when an operation would break the document. */
 export class TakeSixError extends Error {

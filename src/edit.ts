@@ -66,6 +66,13 @@ function requireBlock(doc: TakeSixDocument, id: string) {
   return entry
 }
 
+/** Throws when `block` holds text: a block opens into blocks or into text, never both. */
+function checkContainer(block: Block) {
+  if (block.details !== undefined) {
+    throw new TakeSixError('text-block', `Block "${block.id}" opens into text ("details"), so it cannot hold blocks`)
+  }
+}
+
 function checkRoom(count: number, parentId: string | null) {
   if (count > MAX_BLOCKS_PER_LEVEL) {
     const where = parentId === null ? 'the top level' : `block "${parentId}"`
@@ -142,7 +149,14 @@ export function addBlock(
   input: NewBlock,
 ): { document: TakeSixDocument; block: Block } {
   const tree = buildIndex(doc)
-  if (parentId !== null && !tree.has(parentId)) throw new TakeSixError('not-found', `No block with id "${parentId}"`)
+  if (parentId !== null) {
+    const parent = tree.get(parentId)
+    if (!parent) throw new TakeSixError('not-found', `No block with id "${parentId}"`)
+    checkContainer(parent.block)
+  }
+  if (input.children !== undefined && input.details !== undefined) {
+    throw new TakeSixError('text-block', 'A block opens into blocks or into text: give it "children" or "details", not both')
+  }
   const { at, ...fields } = input
   const id = input.id ?? createId()
   let block: Block | undefined
@@ -161,7 +175,10 @@ export function addBlock(
 
 /** Changes block fields. A new `at` must be free on the block's level. */
 export function updateBlock(doc: TakeSixDocument, id: string, changes: BlockChanges): TakeSixDocument {
-  const { parentId } = requireBlock(doc, id)
+  const { parentId, block } = requireBlock(doc, id)
+  if (changes.details !== undefined && block.children !== undefined) {
+    throw new TakeSixError('text-block', `Block "${id}" opens into blocks, so it cannot have "details" too`)
+  }
   if ('at' in changes) {
     if (changes.at === undefined) throw new TakeSixError('invalid-area', 'A block cannot lose its "at"')
     const area = requireArea(changes.at)
@@ -200,6 +217,7 @@ export function moveBlock(
     const target = tree.get(parentId)
     if (!target) throw new TakeSixError('not-found', `No block with id "${parentId}"`)
     if (target.path.includes(id)) throw new TakeSixError('invalid-move', `Cannot move block "${id}" into itself`)
+    checkContainer(target.block)
   }
   if (parentId === entry.parentId) return at === undefined ? doc : updateBlock(doc, id, { at })
   const removed = updateLevel(doc, entry.parentId, blocks => blocks.filter(b => b.id !== id))
@@ -235,6 +253,7 @@ export function groupBlocks(
     throw new TakeSixError('invalid-move', 'Only blocks on the same level can be grouped')
   }
   if (input.children?.length) throw new TakeSixError('invalid-move', 'The group block gets its children from `ids`')
+  if (input.details !== undefined) throw new TakeSixError('text-block', 'A group block holds blocks, so it cannot have "details"')
   const groupId = input.id ?? createId()
   if (tree.has(groupId)) throw new TakeSixError('duplicate-id', `Id "${groupId}" is already used`)
   checkRoom(ids.length, groupId)
