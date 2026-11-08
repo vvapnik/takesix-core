@@ -148,9 +148,10 @@ Arrows are drawn straight between blocks that share a row or a column, and
 from side to side between blocks that share neither (a branch of a tree), so
 place linked blocks next to each other. A straight arrow with a block in its
 way goes around it: below the blocks between two blocks of a row, beside the
-blocks between two blocks of a column (the way back of a loop), on the
-side with fewer blocks; viewers keep room for it beside the outer columns. Small blocks with empty cells between
-them leave room for branching arrows and their labels. `lintLayout()` in `@takesix/core`
+blocks between two blocks of a column (the way back of a loop), on the side
+with fewer blocks; viewers keep room for it beside the outer columns. Small
+blocks with empty cells between them leave room for branching arrows and their
+labels. `lintLayout()` in `@takesix/core`
 warns when an arrow runs through a third block or two arrows cross.
 
 ## Validation rules
