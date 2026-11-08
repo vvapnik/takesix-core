@@ -124,11 +124,54 @@ describe('validateDocument', () => {
     expect(codes(doc)).toEqual(['duplicate-link-id'])
   })
 
-  it('warns about links between a block and its ancestor', () => {
+  it('warns about links between blocks of different levels', () => {
     const doc = sampleDoc()
-    doc.links = [{ from: 'orders-svc', to: 'api' }]
-    const result = validateDocument(doc)
-    expect(result.valid).toBe(true)
-    expect(result.issues).toMatchObject([{ severity: 'warning', code: 'link-never-visible' }])
+    for (const link of [{ from: 'orders-svc', to: 'api' }, { from: 'auth', to: 'db' }]) {
+      doc.links = [link]
+      const result = validateDocument(doc)
+      expect(result.valid).toBe(true)
+      expect(result.issues).toMatchObject([{ severity: 'warning', code: 'link-never-visible' }])
+    }
+  })
+
+  it('checks shape and style values', () => {
+    const doc = sampleDoc()
+    doc.blocks[0]!.shape = 'decision'
+    doc.blocks[2]!.shape = 'circle' as never
+    doc.links = [{ from: 'web', to: 'api', label: 'yes' }, { from: 'web', to: 'db', label: 'no', style: 'wavy' as never }]
+    expect(validateDocument(doc).issues.map(i => [i.code, i.path])).toEqual([
+      ['invalid-value', '/blocks/2/shape'],
+      ['invalid-value', '/links/1/style'],
+    ])
+  })
+})
+
+describe('flowchart warnings', () => {
+  const flow = (blocks: Record<string, unknown>[], links: Record<string, unknown>[]) =>
+    validateDocument({ takesix: '1.0', title: 'T', blocks, links }).issues.map(i => [i.severity, i.code, i.path])
+
+  it('wants 2–3 labelled exits from a decision', () => {
+    const blocks = [
+      { id: 'q', title: 'Q?', at: 'A1', shape: 'decision' },
+      { id: 'a', title: 'A', at: 'B1' }, { id: 'b', title: 'B', at: 'A2' },
+    ]
+    expect(flow(blocks, [{ from: 'q', to: 'a', label: 'yes' }])).toEqual([['warning', 'decision-exits', '/blocks/0']])
+    expect(flow(blocks, [{ from: 'q', to: 'a', label: 'yes' }, { from: 'q', to: 'b', label: ' ' }]))
+      .toEqual([['warning', 'decision-exit-label', '/blocks/0']])
+    expect(flow(blocks, [{ from: 'q', to: 'a', label: 'yes' }, { from: 'q', to: 'b', label: 'no' }])).toEqual([])
+  })
+
+  it('wants one start per level', () => {
+    const blocks = [
+      { id: 's', title: 'Start', at: 'A1', shape: 'terminator' },
+      { id: 'p', title: 'P', at: 'A2', children: [
+        { id: 's1', title: 'Start', at: 'A1', shape: 'terminator' },
+        { id: 's2', title: 'Start', at: 'A2', shape: 'terminator' },
+      ] },
+      { id: 'e', title: 'End', at: 'A3', shape: 'terminator' },
+    ]
+    // "e" ends the top level: a link leads into it
+    expect(flow(blocks, [{ from: 's', to: 'p' }, { from: 'p', to: 'e' }]))
+      .toEqual([['warning', 'several-starts', '/blocks/1/children']])
   })
 })

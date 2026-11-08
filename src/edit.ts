@@ -320,8 +320,8 @@ export function addLink(doc: TakeSixDocument, input: NewLink): { document: TakeS
   if (!from) throw new TakeSixError('not-found', `No block with id "${input.from}"`)
   if (!to) throw new TakeSixError('not-found', `No block with id "${input.to}"`)
   if (input.from === input.to) throw new TakeSixError('invalid-link', 'A block cannot link to itself')
-  if (from.path.includes(input.to) || to.path.includes(input.from)) {
-    throw new TakeSixError('invalid-link', 'A block cannot link to its own ancestor or descendant')
+  if (from.parentId !== to.parentId) {
+    throw new TakeSixError('invalid-link', 'Only blocks of one level can be linked: link the blocks that contain them')
   }
   const links = doc.links ?? []
   const link: Link = { ...input, id: input.id ?? createId('l') }

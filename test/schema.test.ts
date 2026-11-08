@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { LINK_DIRECTIONS, MAX_BLOCKS_PER_LEVEL, readArea, SCHEMA_URL } from '../src/index.js'
+import { BLOCK_SHAPES, LINK_DIRECTIONS, LINK_STYLES, MAX_BLOCKS_PER_LEVEL, readArea, SCHEMA_URL } from '../src/index.js'
 
 const schema = JSON.parse(readFileSync(new URL('../schema/takesix-1.0.schema.json', import.meta.url), 'utf8'))
 
@@ -12,6 +12,8 @@ describe('JSON Schema', () => {
     expect(schema.$defs.blocks.maxItems).toBe(MAX_BLOCKS_PER_LEVEL)
     expect(schema.$defs.block.required).toContain('at')
     expect(schema.$defs.link.properties.direction.enum).toEqual(LINK_DIRECTIONS)
+    expect(schema.$defs.link.properties.style.enum).toEqual(LINK_STYLES)
+    expect(schema.$defs.block.properties.shape.enum).toEqual(BLOCK_SHAPES)
     // A block opens into blocks or into text
     expect(schema.$defs.block.not.required).toEqual(['children', 'details'])
   })

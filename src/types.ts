@@ -2,6 +2,12 @@
 export type Meta = Record<string, unknown>
 
 /**
+ * Outline of a block, for flowcharts. Symbols follow ISO 5807 (ГОСТ 19.701-90,
+ * DIN 66001); `'process'` (a plain card) is the default.
+ */
+export type BlockShape = 'process' | 'terminator' | 'decision' | 'io' | 'subprocess' | 'loop-start' | 'loop-end'
+
+/**
  * A single block on screen. Each block may contain up to
  * {@link MAX_BLOCKS_PER_LEVEL} child blocks, which are shown when the user
  * drills into it.
@@ -19,6 +25,8 @@ export interface Block {
   details?: string
   /** An emoji or a single character. */
   icon?: string
+  /** Flowchart symbol. Defaults to `'process'`, a plain card. */
+  shape?: BlockShape
   /**
    * Where the block sits on its level's 6×6 grid: one cell (`"B3"`) or a
    * range with both corners included (`"A1:C2"`). Columns `A`–`F`, rows
@@ -33,10 +41,13 @@ export interface Block {
 /** Which way a link points. Defaults to `'forward'` (from → to). */
 export type LinkDirection = 'forward' | 'both' | 'none'
 
+/** How the arrow's line is drawn. Defaults to `'solid'`. */
+export type LinkStyle = 'solid' | 'dashed' | 'dotted'
+
 /**
- * A connection between two blocks. Endpoints may sit on different levels;
- * on screen the link is drawn between their visible ancestors
- * (see {@link visibleLinks}).
+ * A connection between two blocks. Only links between blocks of one level
+ * (same parent) are drawn (see {@link visibleLinks}); a link across levels is
+ * kept in the file but never shown.
  */
 export interface Link {
   /** Unique among links. Optional in files, always set by the editing helpers. */
@@ -46,6 +57,7 @@ export interface Link {
   label?: string
   description?: string
   direction?: LinkDirection
+  style?: LinkStyle
   meta?: Meta
 }
 

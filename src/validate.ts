@@ -1,4 +1,5 @@
-import { LINK_DIRECTIONS, MAX_BLOCKS_PER_LEVEL, SUPPORTED_MAJOR } from './constants.js'
+import { BLOCK_SHAPES, LINK_DIRECTIONS, LINK_STYLES, MAX_BLOCKS_PER_LEVEL, SUPPORTED_MAJOR } from './constants.js'
+import { flowIssues } from './flow.js'
 import { overlap, readArea, type Area } from './grid.js'
 import { buildIndex } from './tree-index.js'
 import type { TakeSixDocument } from './types.js'
@@ -21,6 +22,9 @@ export type IssueCode =
   | 'details-with-children'
   | 'arrow-crosses-block'
   | 'arrows-cross'
+  | 'decision-exits'
+  | 'decision-exit-label'
+  | 'several-starts'
 
 export interface ValidationIssue {
   severity: IssueSeverity
@@ -37,8 +41,8 @@ export interface ValidationResult {
 }
 
 const DOCUMENT_FIELDS = ['takesix', '$schema', 'title', 'description', 'blocks', 'links', 'meta']
-const BLOCK_FIELDS = ['id', 'title', 'description', 'details', 'icon', 'at', 'children', 'meta']
-const LINK_FIELDS = ['id', 'from', 'to', 'label', 'description', 'direction', 'meta']
+const BLOCK_FIELDS = ['id', 'title', 'description', 'details', 'icon', 'shape', 'at', 'children', 'meta']
+const LINK_FIELDS = ['id', 'from', 'to', 'label', 'description', 'direction', 'style', 'meta']
 
 type Obj = Record<string, unknown>
 
@@ -145,6 +149,9 @@ export function validateDocument(input: unknown): ValidationResult {
       checkString(block, 'description', bp, false)
       checkString(block, 'details', bp, false)
       checkString(block, 'icon', bp, false)
+      if (block.shape !== undefined && !BLOCK_SHAPES.includes(block.shape as never)) {
+        error('invalid-value', `${bp}/shape`, `"shape" must be one of: ${BLOCK_SHAPES.join(', ')}`)
+      }
       const area = checkArea(block, bp)
       if (area) {
         const other = placed.find(p => overlap(p.area, area))
@@ -197,6 +204,9 @@ export function validateDocument(input: unknown): ValidationResult {
         if (link.direction !== undefined && !LINK_DIRECTIONS.includes(link.direction as never)) {
           error('invalid-value', `${lp}/direction`, `"direction" must be one of: ${LINK_DIRECTIONS.join(', ')}`)
         }
+        if (link.style !== undefined && !LINK_STYLES.includes(link.style as never)) {
+          error('invalid-value', `${lp}/style`, `"style" must be one of: ${LINK_STYLES.join(', ')}`)
+        }
 
         if (typeof link.id === 'string') {
           const first = seenLinkIds.get(link.id)
@@ -212,11 +222,13 @@ export function validateDocument(input: unknown): ValidationResult {
         if (!toEntry) error('unknown-link-endpoint', `${lp}/to`, `No block with id "${to}"`)
         if (from === to) {
           error('self-link', lp, `Link connects block "${from}" to itself`)
-        } else if (fromEntry && toEntry && (fromEntry.path.includes(to) || toEntry.path.includes(from))) {
+        } else if (fromEntry && toEntry && fromEntry.parentId !== toEntry.parentId) {
           add('warning', 'link-never-visible', lp,
-            `Link between "${from}" and "${to}" is never shown: one block contains the other`)
+            `Link between "${from}" and "${to}" is never shown: only blocks of one level are linked. ` +
+            'Link the blocks that contain them, on the level they share')
         }
       })
+      if (Array.isArray(input.blocks)) issues.push(...flowIssues(input.blocks, input.links, index))
     }
   }
 

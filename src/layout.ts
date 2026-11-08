@@ -65,6 +65,52 @@ export function arrowSegment(a: Area, b: Area): Segment {
     : [{ x, y: ra.top }, { x, y: rb.bottom }]
 }
 
+/**
+ * The lines an arrow between two areas follows, given the other blocks of the
+ * level. Like {@link arrowSegment}, except that a straight arrow with a block
+ * in its way goes around it, as the viewer draws it: blocks sharing rows by
+ * the gap below them, blocks sharing columns (a loop back up, say) by the gap
+ * beside them, on the side that crosses fewer blocks, then the one with fewer
+ * blocks beside it, then the shorter one. Viewers keep room beside the outer
+ * columns for it.
+ */
+export function arrowRoute(a: Area, b: Area, others: Area[]): Segment[] {
+  const straight = arrowSegment(a, b)
+  const blocking = others.filter(o => crossesArea(straight, o))
+  const shareRows = sharedMiddle(a.row, a.height, b.row, b.height) !== undefined
+  const shareCols = sharedMiddle(a.col, a.width, b.col, b.width) !== undefined
+  if (!blocking.length || (!shareRows && !shareCols)) return [straight]
+  const ra = box(a)
+  const rb = box(b)
+  const boxes = [ra, rb, ...blocking.map(box)]
+  const via = (p: Point, q: Point, lane: Point, horizontal: boolean): Segment[] => {
+    // horizontal: the lane is a column x = lane.x; otherwise a row y = lane.y
+    const p2 = horizontal ? { x: lane.x, y: p.y } : { x: p.x, y: lane.y }
+    const q2 = horizontal ? { x: lane.x, y: q.y } : { x: q.x, y: lane.y }
+    return [[p, p2], [p2, q2], [q2, q]]
+  }
+  if (shareRows) {
+    const lane = Math.max(...boxes.map(r => r.bottom)) + GAP / 2
+    const p = { x: (ra.left + ra.right) / 2, y: ra.bottom }
+    const q = { x: (rb.left + rb.right) / 2, y: rb.bottom }
+    return via(p, q, { x: 0, y: lane }, false)
+  }
+  const ay = (ra.top + ra.bottom) / 2
+  const by = (rb.top + rb.bottom) / 2
+  const right = via({ x: ra.right, y: ay }, { x: rb.right, y: by }, { x: Math.max(...boxes.map(r => r.right)) + GAP / 2, y: 0 }, true)
+  const left = via({ x: ra.left, y: ay }, { x: rb.left, y: by }, { x: Math.min(...boxes.map(r => r.left)) - GAP / 2, y: 0 }, true)
+  const crossed = (route: Segment[]) => others.filter(o => route.some(s => crossesArea(s, o))).length
+  const length = (route: Segment[]) => route.reduce((n, [p, q]) => n + Math.abs(q.x - p.x) + Math.abs(q.y - p.y), 0)
+  // Blocks beside the detour's rows on that side: their arrows are likely in the way
+  const top = Math.min(...boxes.map(r => r.top))
+  const bottom = Math.max(...boxes.map(r => r.bottom))
+  const beside = (side: 'left' | 'right') => others.map(box).filter(o => o.top < bottom && o.bottom > top &&
+    (side === 'right' ? o.left >= Math.max(...boxes.map(r => r.right)) : o.right <= Math.min(...boxes.map(r => r.left)))).length
+  // Viewers keep room beside the outer columns for the detour
+  const score = (route: Segment[], side: 'left' | 'right') => crossed(route) * 1000 + beside(side) * 100 + length(route)
+  return score(left, 'left') < score(right, 'right') ? left : right
+}
+
 /** Whether a segment passes through the inside of an area (touching an edge does not count). */
 export function crossesArea([p, q]: Segment, area: Area): boolean {
   const e = 0.01
@@ -115,8 +161,9 @@ export interface LayoutIssue {
 
 /**
  * Layout problems of the screen of `parentId` (`null` = top level): arrows
- * that run through a third block and arrows that cross each other, including
- * arrows merged from nested links. Editors show them next to the arrows.
+ * that run through a third block (after going around the blocks in the way
+ * of a straight arrow, see {@link arrowRoute}) and arrows that cross each
+ * other. Editors show them next to the arrows.
  */
 export function levelLayoutIssues(
   doc: TakeSixDocument,
@@ -127,14 +174,16 @@ export function levelLayoutIssues(
   const arrows = visibleLinks(doc, parentId, index).flatMap(link => {
     const a = areas.get(link.from)
     const b = areas.get(link.to)
-    return a && b ? [{ link, segment: arrowSegment(a, b) }] : []
+    if (!a || !b) return []
+    const others = [...areas].filter(([id]) => id !== link.from && id !== link.to).map(([, area]) => area)
+    return [{ link, route: arrowRoute(a, b, others) }]
   })
   const name = (link: VisibleLink) => `"${link.from}" → "${link.to}"`
   const issues: LayoutIssue[] = []
 
-  for (const { link, segment } of arrows) {
+  for (const { link, route } of arrows) {
     for (const [id, area] of areas) {
-      if (id === link.from || id === link.to || !crossesArea(segment, area)) continue
+      if (id === link.from || id === link.to || !route.some(s => crossesArea(s, area))) continue
       issues.push({
         code: 'arrow-crosses-block',
         message: `Arrow ${name(link)} has block "${id}" in its way: place the two blocks next to each other`,
@@ -146,7 +195,7 @@ export function levelLayoutIssues(
   arrows.forEach((first, i) => {
     for (const second of arrows.slice(i + 1)) {
       const shared = [first.link.from, first.link.to].some(id => id === second.link.from || id === second.link.to)
-      if (shared || !segmentsCross(first.segment, second.segment)) continue
+      if (shared || !first.route.some(s => second.route.some(t => segmentsCross(s, t)))) continue
       issues.push({
         code: 'arrows-cross',
         message: `Arrows ${name(first.link)} and ${name(second.link)} cross`,

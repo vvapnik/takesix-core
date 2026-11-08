@@ -85,6 +85,19 @@
         "icon": {
           "type": "string"
         },
+        "shape": {
+          "enum": [
+            "process",
+            "terminator",
+            "decision",
+            "io",
+            "subprocess",
+            "loop-start",
+            "loop-end"
+          ],
+          "default": "process",
+          "description": "Flowchart symbol, following ISO 5807: process (plain card), terminator (start or end), decision (condition), io (data in or out), subprocess (predefined process), loop-start and loop-end (loop limits)."
+        },
         "at": {
           "$ref": "#/$defs/area"
         },
@@ -136,6 +149,14 @@
             "none"
           ],
           "default": "forward"
+        },
+        "style": {
+          "enum": [
+            "solid",
+            "dashed",
+            "dotted"
+          ],
+          "default": "solid"
         },
         "meta": {
           "$ref": "#/$defs/meta"

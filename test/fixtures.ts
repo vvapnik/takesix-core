@@ -32,8 +32,8 @@ export function sampleDoc(): TakeSixDocument {
     ],
     links: [
       { id: 'l1', from: 'web', to: 'api', label: 'REST' },
-      { id: 'l2', from: 'orders-svc', to: 'db', label: 'SQL' },
-      { id: 'l3', from: 'auth', to: 'db' },
+      { id: 'l2', from: 'api', to: 'db', label: 'SQL' },
+      { id: 'l3', from: 'web', to: 'db' },
       { id: 'l4', from: 'orders-svc', to: 'orders-queue' },
       { id: 'l5', from: 'auth', to: 'orders' },
     ],

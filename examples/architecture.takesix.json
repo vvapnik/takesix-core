@@ -41,13 +41,12 @@
     }
   ],
   "links": [
-    { "id": "l1", "from": "web", "to": "edge", "label": "HTTPS" },
-    { "id": "l2", "from": "mobile", "to": "edge", "label": "HTTPS" },
-    { "id": "l3", "from": "edge", "to": "api" },
+    { "id": "l1", "from": "clients", "to": "edge", "label": "HTTPS" },
+    { "id": "l3", "from": "edge", "to": "app" },
     { "id": "l4", "from": "api", "to": "billing" },
     { "id": "l5", "from": "api", "to": "projects" },
-    { "id": "l6", "from": "auth", "to": "api", "label": "tokens" },
-    { "id": "l7", "from": "projects", "to": "data", "label": "SQL" },
+    { "id": "l6", "from": "auth", "to": "app", "label": "tokens" },
+    { "id": "l7", "from": "app", "to": "data", "label": "SQL" },
     { "id": "l8", "from": "ops", "to": "data", "label": "backups" }
   ]
 }

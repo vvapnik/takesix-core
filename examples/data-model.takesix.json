@@ -19,10 +19,10 @@
     { "id": "shipment", "at": "C4:D4", "icon": "🚚", "title": "Shipment", "description": "Carrier and tracking" }
   ],
   "links": [
-    { "id": "l1", "from": "customer", "to": "order-head", "label": "places", "direction": "none" },
-    { "id": "l2", "from": "order-line", "to": "product", "direction": "none" },
-    { "id": "l3", "from": "order-head", "to": "payment", "direction": "none" },
-    { "id": "l4", "from": "order-head", "to": "shipment", "direction": "none" },
+    { "id": "l1", "from": "customer", "to": "order", "label": "places", "direction": "none" },
+    { "id": "l2", "from": "order", "to": "product", "direction": "none" },
+    { "id": "l3", "from": "order", "to": "payment", "direction": "none" },
+    { "id": "l4", "from": "order", "to": "shipment", "direction": "none" },
     { "id": "l5", "from": "order-head", "to": "order-line", "label": "1 : n", "direction": "none" }
   ]
 }

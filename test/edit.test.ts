@@ -163,7 +163,7 @@ describe('removeBlock', () => {
     const doc = removeBlock(sampleDoc(), 'orders')
     expect(ids(getLevel(doc, 'api'))).toEqual(['auth'])
     expect(findBlock(doc, 'orders-svc')).toBeUndefined()
-    expect(doc.links!.map(l => l.id)).toEqual(['l1', 'l3'])
+    expect(doc.links!.map(l => l.id)).toEqual(['l1', 'l2', 'l3'])
     expect(validateDocument(doc).valid).toBe(true)
   })
 
@@ -249,7 +249,7 @@ describe('groupBlocks / ungroupBlock', () => {
     // auth fits at D1:E1; orders (4 wide) does not fit next to it and goes to a free row
     expect(ids(doc.blocks)).toEqual(['web', 'auth', 'db', 'orders'])
     expect(doc.blocks.map(b => b.at)).toEqual(['A1:C1', 'D1:E1', 'A2:F2', 'A3:D3'])
-    expect(doc.links!.map(l => l.id)).toEqual(['l2', 'l3', 'l4', 'l5'])
+    expect(doc.links!.map(l => l.id)).toEqual(['l3', 'l4', 'l5'])
     expect(validateDocument(doc).valid).toBe(true)
   })
 
@@ -271,6 +271,7 @@ describe('links', () => {
     expectError(() => addLink(sampleDoc(), { from: 'web', to: 'nope' }), 'not-found')
     expectError(() => addLink(sampleDoc(), { from: 'web', to: 'web' }), 'invalid-link')
     expectError(() => addLink(sampleDoc(), { from: 'orders-svc', to: 'api' }), 'invalid-link')
+    expectError(() => addLink(sampleDoc(), { from: 'auth', to: 'db' }), 'invalid-link')
     expectError(() => addLink(sampleDoc(), { id: 'l1', from: 'web', to: 'db' }), 'duplicate-id')
   })
 
