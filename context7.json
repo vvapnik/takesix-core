@@ -1,0 +1,13 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "TakeSix core (@takesix/core)",
+  "description": "The TakeSix format, validation and layout. TakeSix is an open format and libraries that let an AI agent answer with a diagram you can click into instead of a wall of text: at most six blocks per screen, and any block opens into up to six more.",
+  "excludeFolders": ["test", "dist", "node_modules"],
+  "excludeFiles": ["CONTRIBUTING.md"],
+  "rules": [
+    "A TakeSix document is JSON: { \"takesix\": \"1.0\", \"title\", \"blocks\", \"links\" }; every level holds at most 6 blocks, placed on a 6×6 grid with \"at\" (e.g. \"A1:B1\").",
+    "A block opens either into child blocks (\"children\") or into text (\"details\"), never both.",
+    "Check a document with parseDocument before showing it; it returns ok with the document or a list of issues with JSON paths.",
+    "FORMAT.md is the exact specification; the JSON Schema is exported as @takesix/core/schema.json."
+  ]
+}
