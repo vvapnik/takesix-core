@@ -1,5 +1,10 @@
 # @takesix/core
 
+> TakeSix is an open format and libraries that let an AI agent answer with a diagram you can click into instead of a wall of text: at most six blocks per screen, and any block opens into up to six more.
+> **[takesix.vapnik.de](https://takesix.vapnik.de/)** · [FAQ](https://takesix.vapnik.de/faq/)
+
+![TakeSix: answers as diagrams, not walls of text. Six blocks of a checkout diagram with arrows.](https://takesix.vapnik.de/og.png)
+
 Format and core logic of **takesix**: diagrams and presentations that stay
 readable because one screen never holds more than **6 blocks**. Each block can
 open into up to 6 more, as deep as needed, with links between any of them.
