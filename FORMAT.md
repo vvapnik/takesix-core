@@ -60,7 +60,7 @@ listed below and checked by `validateDocument()` in `@takesix/core`.
 | `at` | string | yes | Place on the level's grid: `"B3"` or `"A1:C2"`, see [Grid](#grid). |
 | `description` | string | | Short plain text shown on the card and in the header of the opened block. |
 | `details` | string | | Long Markdown text the block opens into. Never together with `children`. |
-| `icon` | string | | An emoji or a single character. |
+| `icon` | string | | An emoji, a single character, or an inline SVG drawing (`"<svg viewBox=…>…</svg>"`). The SVG is shown as an image: no scripts, no external files. |
 | `shape` | string | | Flowchart symbol, see [Flowcharts](#flowcharts). Defaults to `"process"`, a plain card. |
 | `children` | Block[] | | At most 6. Never together with `details`. |
 | `meta` | object | | Extension data. |

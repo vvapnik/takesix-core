@@ -83,7 +83,8 @@
           "description": "Long-form Markdown. The block opens into this text instead of child blocks, so it cannot have \"children\" too."
         },
         "icon": {
-          "type": "string"
+          "type": "string",
+          "description": "An emoji, a single character, or an inline SVG drawing (\"<svg viewBox=…>…</svg>\"), shown as an image."
         },
         "shape": {
           "enum": [

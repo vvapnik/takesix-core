@@ -149,6 +149,12 @@ export function validateDocument(input: unknown): ValidationResult {
       checkString(block, 'description', bp, false)
       checkString(block, 'details', bp, false)
       checkString(block, 'icon', bp, false)
+      if (typeof block.icon === 'string' && block.icon.trim().startsWith('<')) {
+        const svg = block.icon.trim()
+        if (!svg.startsWith('<svg') || !svg.endsWith('</svg>')) {
+          error('invalid-value', `${bp}/icon`, '"icon" markup must be one <svg>…</svg> element')
+        }
+      }
       if (block.shape !== undefined && !BLOCK_SHAPES.includes(block.shape as never)) {
         error('invalid-value', `${bp}/shape`, `"shape" must be one of: ${BLOCK_SHAPES.join(', ')}`)
       }
