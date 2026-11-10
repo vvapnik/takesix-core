@@ -1,7 +1,8 @@
 {
   "name": "@takesix/core",
   "version": "0.6.0",
-  "description": "takesix document format: readable diagrams with at most 6 blocks per level",
+  "description": "The TakeSix format, validation and layout. TakeSix is an open format and libraries that let an AI agent answer with a diagram you can click into instead of a wall of text: at most six blocks per screen, and any block opens into up to six more.",
+  "homepage": "https://takesix.vapnik.de/",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -27,15 +28,25 @@
   },
   "license": "MIT",
   "keywords": [
+    "takesix",
     "diagram",
     "architecture",
     "c4",
     "presentation",
-    "takesix"
+    "visualization",
+    "nested",
+    "zoomable",
+    "json-schema",
+    "ai",
+    "agent",
+    "llm"
   ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vvapnik/takesix-core.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vvapnik/takesix-core/issues"
   },
   "engines": {
     "node": ">=22"
