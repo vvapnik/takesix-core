@@ -32,3 +32,12 @@ export {
   type NewLink,
 } from './edit.js'
 export { visibleLinks, type VisibleLink } from './links.js'
+export {
+  formatViewAddress,
+  parseViewAddress,
+  resolveView,
+  sameView,
+  viewOfPath,
+  type ResolvedView,
+  type ViewAddress,
+} from './address.js'

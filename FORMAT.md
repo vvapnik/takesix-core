@@ -225,6 +225,21 @@ Deviations from ISO 5807:
 
 `document`, `database` and `connector` may follow in a later minor version.
 
+## Screen addresses
+
+A viewer can point at one screen of a diagram with a URL fragment. The
+address is a block id, so it keeps working when the block moves:
+
+| Fragment | Shows |
+|---|---|
+| `#in=<id>` | the screen inside the block |
+| `#at=<id>` | the level the block lies on, with the block highlighted |
+| none | the top level |
+
+The id is percent-encoded. The address can share the fragment with other
+keys, joined with `&`, e.g. `#takesix=<data>&in=orders`. An unknown id shows
+the top level; `in` on a block that opens into nothing reads as `at`.
+
 ## Extension data
 
 Put tool-specific data in `meta` on the document, a block or a link. Tools
