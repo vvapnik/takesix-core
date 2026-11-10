@@ -1,6 +1,6 @@
 {
   "name": "@takesix/core",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "takesix document format: readable diagrams with at most 6 blocks per level",
   "type": "module",
   "main": "./dist/index.js",
