@@ -7,8 +7,8 @@ import type { ValidationIssue } from './validate.js'
 
 // Layout advice computed from the grid alone, without a browser. Arrows are
 // modelled the way the viewer draws them: straight across the rows or
-// columns two blocks share, otherwise from the side of one block to the
-// facing side of the other. Cells are unit squares with a gap between them;
+// columns two blocks share, otherwise from the side of one block, turning in
+// the gap beside it, to the facing side of the other. Cells are unit squares with a gap between them;
 // real rows differ in height, which rarely changes the answer.
 
 interface Point {
@@ -67,8 +67,9 @@ export function arrowSegment(a: Area, b: Area): Segment {
 
 /**
  * The lines an arrow between two areas follows, given the other blocks of the
- * level. Like {@link arrowSegment}, except that a straight arrow with a block
- * in its way goes around it, as the viewer draws it: blocks sharing rows by
+ * level. Like {@link arrowSegment}, except that a diagonal arrow turns in the
+ * gap beside the block it leaves and runs level into the other, and a
+ * straight arrow with a block in its way goes around it, as the viewer draws it: blocks sharing rows by
  * the gap below them, blocks sharing columns (a loop back up, say) by the gap
  * beside them, on the side that crosses fewer blocks, then the one with fewer
  * blocks beside it, then the shorter one. Viewers keep room beside the outer
@@ -79,9 +80,16 @@ export function arrowRoute(a: Area, b: Area, others: Area[]): Segment[] {
   const blocking = others.filter(o => crossesArea(straight, o))
   const shareRows = sharedMiddle(a.row, a.height, b.row, b.height) !== undefined
   const shareCols = sharedMiddle(a.col, a.width, b.col, b.width) !== undefined
-  if (!blocking.length || (!shareRows && !shareCols)) return [straight]
   const ra = box(a)
   const rb = box(b)
+  if (!shareRows && !shareCols) {
+    // Diagonal: the viewer turns in the gap beside the block the arrow leaves,
+    // then runs level into the other
+    const [p, q] = straight
+    const x = a.col < b.col ? ra.right + GAP / 2 : ra.left - GAP / 2
+    return [[p, { x, y: p.y }], [{ x, y: p.y }, { x, y: q.y }], [{ x, y: q.y }, q]]
+  }
+  if (!blocking.length) return [straight]
   const boxes = [ra, rb, ...blocking.map(box)]
   const via = (p: Point, q: Point, lane: Point, horizontal: boolean): Segment[] => {
     // horizontal: the lane is a column x = lane.x; otherwise a row y = lane.y
@@ -149,6 +157,16 @@ export function segmentsCross([a, b]: Segment, [c, d]: Segment): boolean {
   return d1 * d2 < 0 && d3 * d4 < 0
 }
 
+/** Whether two axis-aligned segments run along one line and share a stretch of it. */
+function segmentsOverlap([a, b]: Segment, [c, d]: Segment): boolean {
+  const e = 0.01
+  const along = (p1: number, p2: number, q1: number, q2: number) =>
+    Math.min(Math.max(p1, p2), Math.max(q1, q2)) - Math.max(Math.min(p1, p2), Math.min(q1, q2)) > e
+  if (a.x === b.x && c.x === d.x && Math.abs(a.x - c.x) < e) return along(a.y, b.y, c.y, d.y)
+  if (a.y === b.y && c.y === d.y && Math.abs(a.y - c.y) < e) return along(a.x, b.x, c.x, d.x)
+  return false
+}
+
 /** A layout problem on one level, with the arrows and blocks it concerns. */
 export interface LayoutIssue {
   code: 'arrow-crosses-block' | 'arrows-cross'
@@ -195,7 +213,7 @@ export function levelLayoutIssues(
   arrows.forEach((first, i) => {
     for (const second of arrows.slice(i + 1)) {
       const shared = [first.link.from, first.link.to].some(id => id === second.link.from || id === second.link.to)
-      if (shared || !first.route.some(s => second.route.some(t => segmentsCross(s, t)))) continue
+      if (shared || !first.route.some(s => second.route.some(t => segmentsCross(s, t) || segmentsOverlap(s, t)))) continue
       issues.push({
         code: 'arrows-cross',
         message: `Arrows ${name(first.link)} and ${name(second.link)} cross`,

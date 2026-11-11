@@ -62,19 +62,26 @@ describe('lintLayout', () => {
   })
 
   it('warns about an arrow running through a third block', () => {
-    const d = doc([b('a', 'A1'), b('b', 'B2'), b('c', 'C3')], [{ from: 'a', to: 'c' }])
+    // a diagonal turns beside "a" and runs level along row 3, through "b"
+    const d = doc([b('a', 'A1'), b('b', 'B3'), b('c', 'C3')], [{ from: 'a', to: 'c' }])
     expect(lintLayout(d)).toMatchObject([{ severity: 'warning', code: 'arrow-crosses-block', path: '/blocks' }])
     expect(lintLayout(d)[0]!.message).toMatch(/"a" → "c" has block "b" in its way/)
+    // a block on the straight line between them is not in the way of the bent arrow
+    expect(lintLayout(doc([b('a', 'A1'), b('b', 'B2'), b('c', 'C3')], [{ from: 'a', to: 'c' }]))).toEqual([])
   })
 
   it('warns about arrows crossing each other', () => {
-    const d = doc([b('a', 'A1'), b('b', 'B1'), b('c', 'A2'), b('d', 'B2')], [{ from: 'a', to: 'd' }, { from: 'b', to: 'c' }])
+    // across a column of blocks, around the one in the middle
+    const d = doc([b('a', 'A1'), b('b', 'C1'), b('m', 'B1'), b('c', 'B3')], [{ from: 'a', to: 'b' }, { from: 'm', to: 'c' }])
     expect(lintLayout(d)).toMatchObject([{ code: 'arrows-cross' }])
+    // two diagonals in an X turn in the same gap: their lines lie on top of each other
+    const x = doc([b('a', 'A1'), b('b', 'B1'), b('c', 'A2'), b('d', 'B2')], [{ from: 'a', to: 'd' }, { from: 'b', to: 'c' }])
+    expect(lintLayout(x)).toMatchObject([{ code: 'arrows-cross' }])
   })
 
   it('checks nested levels, ignoring links across levels', () => {
     const d = doc(
-      [b('p', 'A1', [b('x', 'A1'), b('y', 'B2'), b('z', 'C3')]), b('q', 'B1'), b('r', 'C1')],
+      [b('p', 'A1', [b('x', 'A1'), b('y', 'B3'), b('z', 'C3')]), b('q', 'B1'), b('r', 'C1')],
       [{ from: 'x', to: 'z' }, { from: 'y', to: 'r' }],
     )
     expect(lintLayout(d).map(i => [i.code, i.path])).toEqual([['arrow-crosses-block', '/blocks/0/children']])
@@ -82,7 +89,7 @@ describe('lintLayout', () => {
 
   it('names the arrows and blocks of each problem, level by level', () => {
     const d = doc(
-      [b('p', 'A1', [b('x', 'A1'), b('y', 'B2'), b('z', 'C3')]), b('q', 'A2'), b('r', 'B2'), b('s', 'A3'), b('t', 'B3')],
+      [b('p', 'A1', [b('x', 'A1'), b('y', 'B3'), b('z', 'C3')]), b('q', 'A2'), b('r', 'B2'), b('s', 'A3'), b('t', 'B3')],
       [{ from: 'x', to: 'z' }, { from: 'q', to: 't' }, { from: 'r', to: 's' }],
     )
     expect(levelLayoutIssues(d, null)).toMatchObject([{ code: 'arrows-cross', arrows: ['q|t', 'r|s'], blocks: [] }])
