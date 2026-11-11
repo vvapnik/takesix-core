@@ -20,4 +20,4 @@ export const BLOCK_SHAPES: readonly BlockShape[] = [
   'process', 'terminator', 'decision', 'io', 'subprocess', 'loop-start', 'loop-end',
 ]
 
-export const SCHEMA_URL = 'https://raw.githubusercontent.com/vvapnik/takesix-core/main/schema/takesix-1.0.schema.json'
+export const SCHEMA_URL = 'https://takesix.vapnik.de/schema/takesix-1.0.schema.json'

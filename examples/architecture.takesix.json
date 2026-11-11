@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/vvapnik/takesix-core/main/schema/takesix-1.0.schema.json",
+  "$schema": "https://takesix.vapnik.de/schema/takesix-1.0.schema.json",
   "takesix": "1.0",
   "title": "SaaS app architecture",
   "description": "A tall block for the part that matters most, the request path along the top row",

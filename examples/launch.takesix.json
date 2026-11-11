@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/vvapnik/takesix-core/main/schema/takesix-1.0.schema.json",
+  "$schema": "https://takesix.vapnik.de/schema/takesix-1.0.schema.json",
   "takesix": "1.0",
   "title": "Product launch",
   "description": "Three steps in a row, the launch itself under the last one, what follows below",

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/vvapnik/takesix-core/main/schema/takesix-1.0.schema.json",
+  "$schema": "https://takesix.vapnik.de/schema/takesix-1.0.schema.json",
   "takesix": "1.0",
   "title": "Shop data model",
   "description": "A hub in the middle, every neighbour straight above, below or beside it; empty corners are left empty",

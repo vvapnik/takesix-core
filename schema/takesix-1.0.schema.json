@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/vvapnik/takesix-core/main/schema/takesix-1.0.schema.json",
+  "$id": "https://takesix.vapnik.de/schema/takesix-1.0.schema.json",
   "title": "takesix document",
   "description": "A diagram split into levels of at most 6 blocks. Structural rules that JSON Schema cannot express (unique ids, existing link endpoints, blocks that overlap) are checked by validateDocument() in @takesix/core.",
   "type": "object",

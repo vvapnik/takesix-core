@@ -15,7 +15,7 @@ listed below and checked by `validateDocument()` in `@takesix/core`.
 
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/vvapnik/takesix-core/main/schema/takesix-1.0.schema.json",
+  "$schema": "https://takesix.vapnik.de/schema/takesix-1.0.schema.json",
   "takesix": "1.0",
   "title": "Online shop",
   "blocks": [
