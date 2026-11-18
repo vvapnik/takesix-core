@@ -18,6 +18,7 @@ export type IssueCode =
   | 'link-never-visible'
   | 'invalid-value'
   | 'unknown-field'
+  | 'unknown-value'
   | 'overlap'
   | 'details-with-children'
   | 'arrow-crosses-block'
@@ -66,6 +67,18 @@ export function validateDocument(input: unknown): ValidationResult {
   const add = (severity: IssueSeverity, code: IssueCode, path: string, message: string) =>
     issues.push({ severity, code, path, message })
   const error = (code: IssueCode, path: string, message: string) => add('error', code, path, message)
+
+  // A later 1.x may add values (FORMAT.md, Versioning): an unknown one is a
+  // warning so a 1.0 reader still opens the document; a non-string is an error.
+  const checkKnown = (obj: Obj, key: string, known: readonly string[], path: string) => {
+    const value = obj[key]
+    if (value === undefined) return
+    if (typeof value !== 'string') error('invalid-type', `${path}/${key}`, `"${key}" must be a string`)
+    else if (!known.includes(value)) {
+      add('warning', 'unknown-value', `${path}/${key}`,
+        `Unknown "${key}" value "${value}" (known: ${known.join(', ')}); readers fall back to "${known[0]}"`)
+    }
+  }
 
   const checkString = (obj: Obj, key: string, path: string, required: boolean) => {
     const value = obj[key]
@@ -155,9 +168,7 @@ export function validateDocument(input: unknown): ValidationResult {
           error('invalid-value', `${bp}/icon`, '"icon" markup must be one <svg>…</svg> element')
         }
       }
-      if (block.shape !== undefined && !BLOCK_SHAPES.includes(block.shape as never)) {
-        error('invalid-value', `${bp}/shape`, `"shape" must be one of: ${BLOCK_SHAPES.join(', ')}`)
-      }
+      checkKnown(block, 'shape', BLOCK_SHAPES, bp)
       const area = checkArea(block, bp)
       if (area) {
         const other = placed.find(p => overlap(p.area, area))
@@ -207,12 +218,8 @@ export function validateDocument(input: unknown): ValidationResult {
         checkString(link, 'description', lp, false)
         checkMeta(link, lp)
         checkUnknown(link, LINK_FIELDS, lp)
-        if (link.direction !== undefined && !LINK_DIRECTIONS.includes(link.direction as never)) {
-          error('invalid-value', `${lp}/direction`, `"direction" must be one of: ${LINK_DIRECTIONS.join(', ')}`)
-        }
-        if (link.style !== undefined && !LINK_STYLES.includes(link.style as never)) {
-          error('invalid-value', `${lp}/style`, `"style" must be one of: ${LINK_STYLES.join(', ')}`)
-        }
+        checkKnown(link, 'direction', LINK_DIRECTIONS, lp)
+        checkKnown(link, 'style', LINK_STYLES, lp)
 
         if (typeof link.id === 'string') {
           const first = seenLinkIds.get(link.id)
