@@ -115,7 +115,7 @@ describe('validateDocument', () => {
       { from: 'web', to: 'web' },
       { from: 'web', to: 'db', direction: 'sideways' as never },
     ]
-    expect(codes(doc)).toEqual(['unknown-link-endpoint', 'self-link', 'invalid-value'])
+    expect(codes(doc)).toEqual(['unknown-link-endpoint', 'self-link', 'unknown-value'])
   })
 
   it('reports duplicate link ids', () => {
@@ -134,14 +134,33 @@ describe('validateDocument', () => {
     }
   })
 
-  it('checks shape and style values', () => {
+  it('warns about unknown shape, direction and style values from a later 1.x', () => {
     const doc = sampleDoc()
     doc.blocks[0]!.shape = 'decision'
-    doc.blocks[2]!.shape = 'circle' as never
-    doc.links = [{ from: 'web', to: 'api', label: 'yes' }, { from: 'web', to: 'db', label: 'no', style: 'wavy' as never }]
-    expect(validateDocument(doc).issues.map(i => [i.code, i.path])).toEqual([
-      ['invalid-value', '/blocks/2/shape'],
-      ['invalid-value', '/links/1/style'],
+    doc.blocks[2]!.shape = 'database' as never
+    doc.links = [
+      { from: 'web', to: 'api', label: 'yes', direction: 'back' as never },
+      { from: 'web', to: 'db', label: 'no', style: 'wavy' as never },
+    ]
+    const result = validateDocument(doc)
+    expect(result.valid).toBe(true)
+    expect(result.issues.map(i => [i.severity, i.code, i.path])).toEqual([
+      ['warning', 'unknown-value', '/blocks/2/shape'],
+      ['warning', 'unknown-value', '/links/0/direction'],
+      ['warning', 'unknown-value', '/links/1/style'],
+    ])
+  })
+
+  it('rejects shape, direction and style values that are not strings', () => {
+    const doc = sampleDoc()
+    doc.blocks[2]!.shape = 3 as never
+    doc.links = [{ from: 'web', to: 'db', direction: true as never, style: null as never }]
+    const result = validateDocument(doc)
+    expect(result.valid).toBe(false)
+    expect(result.issues.map(i => [i.code, i.path])).toEqual([
+      ['invalid-type', '/blocks/2/shape'],
+      ['invalid-type', '/links/0/direction'],
+      ['invalid-type', '/links/0/style'],
     ])
   })
 })

@@ -167,19 +167,24 @@ Errors (the document is rejected):
 - duplicate block id, duplicate link id;
 - link endpoint that is not a block id;
 - link from a block to itself;
-- unknown `direction`, `style` or `shape` value;
+- `direction`, `style` or `shape` that is not a string;
 - version with a major number other than `1`.
 
 Warnings (the document is accepted):
 
 - unknown field (likely a typo; use `meta` for extension data);
+- unknown `direction`, `style` or `shape` value, e.g. one added in a later
+  1.x: readers draw it as the default (`forward`, `solid`, `process`) and
+  editors keep the original value;
 - link between blocks of different levels: it is never drawn (see above);
 - flowchart advice (see [Flowcharts](#flowcharts)): a `decision` without 2–3
   exits on its level, or with an exit that has no `label`; more than one
   start on a level (a `terminator` no link leads into).
 
-The JSON Schema is stricter about unknown fields than `validateDocument()`:
-it rejects them, which helps catch typos when a document is generated.
+The JSON Schema is stricter than `validateDocument()` about unknown fields
+and unknown `direction`, `style` and `shape` values: it rejects them, which
+helps catch typos when a document is generated. Readers should rely on
+`validateDocument()`, not on the schema, to decide whether to open a document.
 
 ## Flowcharts
 
@@ -248,7 +253,8 @@ avoid clashes, e.g. `{ "meta": { "confluence.pageId": "123" } }`.
 
 ## Versioning
 
-`takesix` is `"<major>.<minor>"`. A minor release only adds optional fields,
-so a 1.0 reader can open a 1.x document (it will warn about the new fields).
+`takesix` is `"<major>.<minor>"`. A minor release only adds optional fields
+and new values of `direction`, `style` and `shape`, so a 1.0 reader can open
+a 1.x document (it will warn about the new fields and values).
 A new major version means a breaking change; readers reject majors they do not
 know.
