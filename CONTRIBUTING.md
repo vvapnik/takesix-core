@@ -1,0 +1,115 @@
+# Contributing
+
+Thanks for helping with takesix! This file covers how to set up the project
+and how to write commits.
+
+## Setup
+
+Use Node 24 LTS (`.nvmrc`; with nvm run `nvm use`).
+
+```bash
+npm install
+npm test
+npm run build
+```
+
+Every change should keep `npm test` and `npx tsc --noEmit` passing. New
+behaviour needs a test.
+
+## Commit messages
+
+We use [Conventional Commits](https://www.conventionalcommits.org/). The
+history drives versioning and the changelog, so please follow it.
+
+```
+<type>(<scope>): <summary>
+
+<body: why and what, optional>
+
+<footer: BREAKING CHANGE, Refs #12, optional>
+```
+
+- English, imperative mood: "add", not "added" or "adds".
+- Lower case summary, no trailing period, first line at most 72 characters.
+- One logical change per commit.
+
+### Types
+
+| Type | Use for | Release |
+|---|---|---|
+| `feat` | a new capability | minor |
+| `fix` | a bug fix | patch |
+| `perf` | faster, same behaviour | patch |
+| `refactor` | code change without behaviour change | — |
+| `docs` | README, FORMAT.md, comments | — |
+| `test` | tests only | — |
+| `build` | build setup, dependencies, package.json | — |
+| `ci` | GitHub Actions | — |
+| `chore` | anything else (.gitignore, configs) | — |
+
+### Scopes
+
+`format`, `schema`, `validate`, `parse`, `grid`, `layout`, `edit`, `links`, `query`,
+`deps`, and `release` for version bumps (`chore(release): 1.2.0`). Leave the
+scope out when a change touches the whole package.
+
+CI checks every pushed commit with commitlint (`commitlint.config.js`). To
+check yours before pushing: `npx commitlint --from origin/main`.
+
+### Breaking changes
+
+Add `!` after the type and explain in a `BREAKING CHANGE:` footer. This bumps
+the major version.
+
+```
+feat(edit)!: return a result object from removeBlock
+
+BREAKING CHANGE: removeBlock now returns { document, removed } instead of the document.
+```
+
+### Changes to the format
+
+The JSON format is a public contract. Any change to `schema/` or `FORMAT.md`
+that changes which documents are valid uses the `format` scope:
+
+- a new optional field → `feat(format): …` and a new minor format version
+  (1.0 → 1.1);
+- a removed field, a field that becomes required, or a field whose meaning
+  changes → `feat(format)!: …` and a new major format version.
+
+Wording fixes that do not change validity are `docs(format): …`.
+
+### Examples
+
+```
+feat(links): project cross-level links onto visible ancestors
+fix(edit): keep links when moving a block between levels
+docs(format): describe link visibility rules
+build(deps): bump vitest to 1.6
+```
+
+### No AI co-author trailers
+
+Do not add `Co-Authored-By` trailers (or similar attribution lines) for AI
+models or coding assistants. Commits are authored by the person who submits
+them, and that person is responsible for the change. `Co-Authored-By` is for
+human co-authors only.
+
+## Releases
+
+Releases are automated with
+[release-please](https://github.com/googleapis/release-please). Nobody edits
+the version or the changelog by hand.
+
+1. Every push to `main` updates a Release PR titled `chore(release): X.Y.Z`.
+   The version follows from the commit types since the last release (see
+   [Types](#types)); the PR bumps the version in `package.json` and
+   adds the `feat`, `fix` and `perf` commits to `CHANGELOG.md`.
+2. To release, squash-merge the Release PR. `publish.yml` then tags
+   `vX.Y.Z`, creates the GitHub Release, runs CI and publishes to npm with
+   provenance. Versions with a pre-release part (`1.1.0-beta.1`) go to the
+   `next` dist-tag.
+
+To force a version, add a `Release-As: 2.0.0` footer to a commit. Settings
+are in `release-please-config.json`; `.release-please-manifest.json` holds
+the last released version.

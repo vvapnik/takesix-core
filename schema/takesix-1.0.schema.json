@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://takesix.vapnik.de/schema/takesix-1.0.schema.json",
+  "title": "takesix document",
+  "description": "A diagram split into levels of at most 6 blocks. Structural rules that JSON Schema cannot express (unique ids, existing link endpoints, blocks that overlap) are checked by validateDocument() in @takesix/core.",
+  "type": "object",
+  "required": [
+    "takesix",
+    "title",
+    "blocks"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "takesix": {
+      "type": "string",
+      "pattern": "^1\\.[0-9]+$",
+      "description": "Format version."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "blocks": {
+      "$ref": "#/$defs/blocks"
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/link"
+      }
+    },
+    "meta": {
+      "$ref": "#/$defs/meta"
+    }
+  },
+  "$defs": {
+    "area": {
+      "type": "string",
+      "pattern": "^[A-F][1-6](:[A-F][1-6])?$",
+      "description": "Place on the level's 6×6 grid: one cell (\"B3\") or a range with both corners included (\"A1:C2\"). Columns A–F, rows 1–6, top-left corner first. Blocks of one level must not overlap."
+    },
+    "meta": {
+      "type": "object",
+      "description": "Free-form extension data, preserved as is."
+    },
+    "blocks": {
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "$ref": "#/$defs/block"
+      }
+    },
+    "block": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique across the whole document."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "description": "Short plain-text summary shown on the card."
+        },
+        "details": {
+          "type": "string",
+          "description": "Long-form Markdown. The block opens into this text instead of child blocks, so it cannot have \"children\" too."
+        },
+        "icon": {
+          "type": "string",
+          "description": "An emoji, a single character, or an inline SVG drawing (\"<svg viewBox=…>…</svg>\"), shown as an image."
+        },
+        "shape": {
+          "enum": [
+            "process",
+            "terminator",
+            "decision",
+            "io",
+            "subprocess",
+            "loop-start",
+            "loop-end"
+          ],
+          "default": "process",
+          "description": "Flowchart symbol, following ISO 5807: process (plain card), terminator (start or end), decision (condition), io (data in or out), subprocess (predefined process), loop-start and loop-end (loop limits)."
+        },
+        "at": {
+          "$ref": "#/$defs/area"
+        },
+        "children": {
+          "$ref": "#/$defs/blocks"
+        },
+        "meta": {
+          "$ref": "#/$defs/meta"
+        }
+      },
+      "not": {
+        "required": [
+          "children",
+          "details"
+        ],
+        "description": "A block opens either into child blocks or into text: \"children\" and \"details\" never come together."
+      }
+    },
+    "link": {
+      "type": "object",
+      "required": [
+        "from",
+        "to"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "from": {
+          "type": "string",
+          "minLength": 1
+        },
+        "to": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "direction": {
+          "enum": [
+            "forward",
+            "both",
+            "none"
+          ],
+          "default": "forward"
+        },
+        "style": {
+          "enum": [
+            "solid",
+            "dashed",
+            "dotted"
+          ],
+          "default": "solid"
+        },
+        "meta": {
+          "$ref": "#/$defs/meta"
+        }
+      }
+    }
+  }
+}

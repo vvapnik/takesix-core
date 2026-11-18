@@ -1,0 +1,61 @@
+{
+  "name": "@takesix/core",
+  "version": "0.8.0",
+  "description": "The TakeSix format, validation and layout. TakeSix is an open format and libraries that let an AI agent answer with a diagram you can click into instead of a wall of text: at most six blocks per screen, and any block opens into up to six more.",
+  "homepage": "https://takesix.vapnik.de/",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./schema.json": "./schema/takesix-1.0.schema.json"
+  },
+  "files": [
+    "dist",
+    "schema",
+    "FORMAT.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepare": "npm run build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "license": "MIT",
+  "keywords": [
+    "takesix",
+    "diagram",
+    "architecture",
+    "c4",
+    "presentation",
+    "visualization",
+    "nested",
+    "zoomable",
+    "json-schema",
+    "ai",
+    "agent",
+    "llm"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vvapnik/takesix-core.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vvapnik/takesix-core/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
+    "@types/node": "^24.19.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}
