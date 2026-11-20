@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { BLOCK_SHAPES, LINK_DIRECTIONS, LINK_STYLES, MAX_BLOCKS_PER_LEVEL, readArea, SCHEMA_URL } from '../src/index.js'
+import { BLOCK_SHAPES, BLOCK_TONES, LINK_DIRECTIONS, LINK_STYLES, MAX_BLOCKS_PER_LEVEL, readArea, SCHEMA_URL, TONE_COLOR_PATTERN } from '../src/index.js'
 
-const schema = JSON.parse(readFileSync(new URL('../schema/takesix-1.0.schema.json', import.meta.url), 'utf8'))
+const schema = JSON.parse(readFileSync(new URL('../schema/takesix-1.1.schema.json', import.meta.url), 'utf8'))
 
 // The JSON Schema is hand-written for editors and agents; keep it in sync
 // with the constants the validator uses.
@@ -14,6 +14,8 @@ describe('JSON Schema', () => {
     expect(schema.$defs.link.properties.direction.enum).toEqual(LINK_DIRECTIONS)
     expect(schema.$defs.link.properties.style.enum).toEqual(LINK_STYLES)
     expect(schema.$defs.block.properties.shape.enum).toEqual(BLOCK_SHAPES)
+    expect(schema.$defs.block.properties.tone.anyOf[0].enum).toEqual(BLOCK_TONES)
+    expect(schema.$defs.block.properties.tone.anyOf[1].pattern).toBe(TONE_COLOR_PATTERN.source)
     // A block opens into blocks or into text
     expect(schema.$defs.block.not.required).toEqual(['children', 'details'])
   })

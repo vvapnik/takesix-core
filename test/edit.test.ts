@@ -54,7 +54,7 @@ describe('queries', () => {
 describe('createDocument', () => {
   it('creates an empty valid document', () => {
     const doc = createDocument({ title: 'New' })
-    expect(doc).toEqual({ takesix: '1.0', title: 'New', blocks: [] })
+    expect(doc).toEqual({ takesix: '1.1', title: 'New', blocks: [] })
     expect(validateDocument(doc).valid).toBe(true)
   })
 })

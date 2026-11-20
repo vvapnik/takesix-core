@@ -7,6 +7,15 @@ export type Meta = Record<string, unknown>
  */
 export type BlockShape = 'process' | 'terminator' | 'decision' | 'io' | 'subprocess' | 'loop-start' | 'loop-end'
 
+/** What a block's colour says. Viewers turn each name into colours of their theme. */
+export type BlockToneName = 'neutral' | 'accent' | 'success' | 'warning' | 'danger'
+
+/**
+ * Colour of a block: a {@link BlockToneName}, or a colour of your own as
+ * `"#RGB"` or `"#RRGGBB"`. Defaults to `'neutral'`.
+ */
+export type BlockTone = BlockToneName | `#${string}`
+
 /**
  * A single block on screen. Each block may contain up to
  * {@link MAX_BLOCKS_PER_LEVEL} child blocks, which are shown when the user
@@ -27,6 +36,8 @@ export interface Block {
   icon?: string
   /** Flowchart symbol. Defaults to `'process'`, a plain card. */
   shape?: BlockShape
+  /** Colour by meaning, or a hex colour of your own. Defaults to `'neutral'`. */
+  tone?: BlockTone
   /**
    * Where the block sits on its level's 6×6 grid: one cell (`"B3"`) or a
    * range with both corners included (`"A1:C2"`). Columns `A`–`F`, rows
@@ -62,7 +73,7 @@ export interface Link {
 }
 
 export interface TakeSixDocument {
-  /** Format version, `"1.0"`. */
+  /** Format version, `"1.1"`. */
   takesix: string
   /** Optional JSON Schema reference for editors. */
   $schema?: string

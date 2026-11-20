@@ -163,6 +163,25 @@ describe('validateDocument', () => {
       ['invalid-type', '/links/0/style'],
     ])
   })
+
+  it('accepts tone names and hex colours, warns about the rest', () => {
+    const doc = sampleDoc()
+    doc.blocks[0]!.tone = 'danger'
+    doc.blocks[1]!.tone = '#3fa34d'
+    doc.blocks[2]!.tone = '#abc'
+    expect(validateDocument(doc).issues).toEqual([])
+
+    doc.blocks[0]!.tone = 'pink' as never
+    doc.blocks[1]!.tone = '#12345'
+    doc.blocks[2]!.tone = 7 as never
+    const result = validateDocument(doc)
+    expect(result.valid).toBe(false)
+    expect(result.issues.map(i => [i.severity, i.code, i.path])).toEqual([
+      ['warning', 'unknown-value', '/blocks/0/tone'],
+      ['warning', 'unknown-value', '/blocks/1/tone'],
+      ['error', 'invalid-type', '/blocks/2/tone'],
+    ])
+  })
 })
 
 describe('flowchart warnings', () => {

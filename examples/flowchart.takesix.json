@@ -1,6 +1,6 @@
 {
-  "$schema": "https://takesix.vapnik.de/schema/takesix-1.0.schema.json",
-  "takesix": "1.0",
+  "$schema": "https://takesix.vapnik.de/schema/takesix-1.1.schema.json",
+  "takesix": "1.1",
   "title": "Ship paid orders",
   "description": "An algorithm as a flowchart: ISO 5807 symbols, a loop, a condition and a retry",
   "blocks": [
@@ -16,9 +16,9 @@
       "children": [
         { "id": "begin", "at": "A1:B1", "shape": "terminator", "title": "Begin" },
         { "id": "charge", "at": "A2:B2", "title": "Charge the card" },
-        { "id": "paid", "at": "A3:B4", "shape": "decision", "title": "Paid?" },
-        { "id": "wait", "at": "A5:B5", "title": "Wait an hour", "description": "Then try again" },
-        { "id": "ship", "at": "E3:F4", "title": "Ship", "description": "Print the label, book the courier" },
+        { "id": "paid", "at": "A3:B4", "shape": "decision", "tone": "accent", "title": "Paid?" },
+        { "id": "wait", "at": "A5:B5", "tone": "warning", "title": "Wait an hour", "description": "Then try again" },
+        { "id": "ship", "at": "E3:F4", "tone": "success", "title": "Ship", "description": "Print the label, book the courier" },
         { "id": "done", "at": "E5:F5", "shape": "terminator", "title": "Done" }
       ]
     },
