@@ -1,4 +1,4 @@
-import { BLOCK_SHAPES, LINK_DIRECTIONS, LINK_STYLES, MAX_BLOCKS_PER_LEVEL, SUPPORTED_MAJOR } from './constants.js'
+import { BLOCK_SHAPES, BLOCK_TONES, LINK_DIRECTIONS, LINK_STYLES, MAX_BLOCKS_PER_LEVEL, SUPPORTED_MAJOR, TONE_COLOR_PATTERN } from './constants.js'
 import { flowIssues } from './flow.js'
 import { overlap, readArea, type Area } from './grid.js'
 import { buildIndex } from './tree-index.js'
@@ -42,7 +42,7 @@ export interface ValidationResult {
 }
 
 const DOCUMENT_FIELDS = ['takesix', '$schema', 'title', 'description', 'blocks', 'links', 'meta']
-const BLOCK_FIELDS = ['id', 'title', 'description', 'details', 'icon', 'shape', 'at', 'children', 'meta']
+const BLOCK_FIELDS = ['id', 'title', 'description', 'details', 'icon', 'shape', 'tone', 'at', 'children', 'meta']
 const LINK_FIELDS = ['id', 'from', 'to', 'label', 'description', 'direction', 'style', 'meta']
 
 type Obj = Record<string, unknown>
@@ -169,6 +169,13 @@ export function validateDocument(input: unknown): ValidationResult {
         }
       }
       checkKnown(block, 'shape', BLOCK_SHAPES, bp)
+      // A tone is a name or a colour of the block's own
+      if (typeof block.tone === 'string' && block.tone.startsWith('#')) {
+        if (!TONE_COLOR_PATTERN.test(block.tone)) {
+          add('warning', 'unknown-value', `${bp}/tone`,
+            `"tone" colour "${block.tone}" is not "#RGB" or "#RRGGBB"; readers fall back to "neutral"`)
+        }
+      } else checkKnown(block, 'tone', BLOCK_TONES, bp)
       const area = checkArea(block, bp)
       if (area) {
         const other = placed.find(p => overlap(p.area, area))

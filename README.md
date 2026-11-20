@@ -20,7 +20,7 @@ immutably, and works out which links to draw on each screen. Viewers and editors
 build on it.
 
 - Format specification: [FORMAT.md](FORMAT.md)
-- JSON Schema: [schema/takesix-1.0.schema.json](schema/takesix-1.0.schema.json)
+- JSON Schema: [schema/takesix-1.1.schema.json](schema/takesix-1.1.schema.json)
   (also exported as `@takesix/core/schema.json`)
 
 ## Examples

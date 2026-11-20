@@ -1,10 +1,10 @@
-import type { BlockShape, LinkDirection, LinkStyle } from './types.js'
+import type { BlockShape, BlockToneName, LinkDirection, LinkStyle } from './types.js'
 
 /** The core rule: never more than six blocks on one screen. */
 export const MAX_BLOCKS_PER_LEVEL = 6
 
 /** Version written into new documents. */
-export const FORMAT_VERSION = '1.0'
+export const FORMAT_VERSION = '1.1'
 
 /** Major version this library can read. */
 export const SUPPORTED_MAJOR = 1
@@ -20,4 +20,9 @@ export const BLOCK_SHAPES: readonly BlockShape[] = [
   'process', 'terminator', 'decision', 'io', 'subprocess', 'loop-start', 'loop-end',
 ]
 
-export const SCHEMA_URL = 'https://takesix.vapnik.de/schema/takesix-1.0.schema.json'
+export const BLOCK_TONES: readonly BlockToneName[] = ['neutral', 'accent', 'success', 'warning', 'danger']
+
+/** A block's own colour in `tone`: `#RGB` or `#RRGGBB`. */
+export const TONE_COLOR_PATTERN = /^#(?:[0-9a-fA-F]{3}){1,2}$/
+
+export const SCHEMA_URL = 'https://takesix.vapnik.de/schema/takesix-1.1.schema.json'

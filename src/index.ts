@@ -1,5 +1,5 @@
-export type { Block, BlockShape, Link, LinkDirection, LinkStyle, Meta, TakeSixDocument } from './types.js'
-export { BLOCK_SHAPES, FORMAT_VERSION, GRID_SIZE, LINK_DIRECTIONS, LINK_STYLES, MAX_BLOCKS_PER_LEVEL, SCHEMA_URL } from './constants.js'
+export type { Block, BlockShape, BlockTone, BlockToneName, Link, LinkDirection, LinkStyle, Meta, TakeSixDocument } from './types.js'
+export { BLOCK_SHAPES, BLOCK_TONES, FORMAT_VERSION, GRID_SIZE, LINK_DIRECTIONS, LINK_STYLES, MAX_BLOCKS_PER_LEVEL, SCHEMA_URL, TONE_COLOR_PATTERN } from './constants.js'
 export { TakeSixError, type TakeSixErrorCode } from './errors.js'
 export { createId } from './id.js'
 export { buildIndex, type IndexEntry, type TreeIndex } from './tree-index.js'
