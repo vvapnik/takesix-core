@@ -139,10 +139,11 @@ are three blocks per row (`"A1:B1"`, `"C1:D1"`, `"E1:F1"`), and a main block
 with helpers is one tall block beside a column of small ones (`"A1:D3"`,
 `"E1:F1"`, `"E2:F2"`, `"E3:F3"`).
 
-Viewers keep all 6 columns at equal width, so a block's width is always
-the share of the screen it asks for. Row heights follow the content. An empty
-row inside the grid is a deliberate gap; empty rows at the bottom take no
-space. On narrow screens viewers may shrink empty columns and rows.
+Viewers keep all 6 columns and all 6 rows at equal size, so a block's width
+and height are always the share of the screen it asks for, and blocks stay
+where they are placed: a level can sit in the middle of the screen. An empty
+row or column is a deliberate gap. On narrow screens viewers may make rows
+as tall as their content and shrink empty columns and rows.
 
 Arrows are drawn straight between blocks that share a row or a column, and
 from side to side between blocks that share neither (a branch of a tree), so
