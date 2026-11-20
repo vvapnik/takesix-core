@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/vvapnik/takesix-core/compare/v1.0.1...v1.1.0) (2026-11-20)
+
+
+### Features
+
+* **format:** colour a block by meaning with tone, format 1.1 ([0fee69c](https://github.com/vvapnik/takesix-core/commit/0fee69c79fffb9b6bd6a8e99dc4e88a1e4735ba3))
+* **format:** colour a block by meaning with tone, format 1.1 ([bd2e369](https://github.com/vvapnik/takesix-core/commit/bd2e36933c35a10b4c94ce75a900be65c7c0cec9))
+
 ## [1.0.1](https://github.com/vvapnik/takesix-core/compare/v1.0.0...v1.0.1) (2026-11-18)
 
 
