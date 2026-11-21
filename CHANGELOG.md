@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0](https://github.com/vvapnik/takesix-core/compare/v1.1.0...v1.2.0) (2026-11-21)
+
+
+### Features
+
+* **format:** guided tours through a diagram with journeys, format 1.2 ([9674af8](https://github.com/vvapnik/takesix-core/commit/9674af8d9850bd5f5291883a4ec3e7e59efbc1b8))
+* **format:** guided tours through a diagram with journeys, format 1.2 ([92cbedb](https://github.com/vvapnik/takesix-core/commit/92cbedbee00a3853df104f82e291a76cb1122481))
+
 ## [1.1.0](https://github.com/vvapnik/takesix-core/compare/v1.0.1...v1.1.0) (2026-11-20)
 
 
