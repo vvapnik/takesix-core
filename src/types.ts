@@ -72,8 +72,40 @@ export interface Link {
   meta?: Meta
 }
 
+/** Fields every Journey step has, whichever screen it points at. */
+export interface JourneyStepFields {
+  /** Short caption shown while the step is on screen. */
+  label?: string
+  /** Seconds the step stays on screen while the Journey plays. Viewers pick a default when it is missing. */
+  duration?: number
+  /** Markdown to accompany the step, like speaker notes. Viewers need not show it. */
+  notes?: string
+  meta?: Meta
+}
+
+/**
+ * One step of a {@link Journey}: a screen, addressed like a view address —
+ * `in` the screen inside a block, `at` the block's level with the block
+ * highlighted, neither the top level. Never both.
+ */
+export type JourneyStep = JourneyStepFields & (
+  | { in: string; at?: never }
+  | { at: string; in?: never }
+  | { in?: never; at?: never }
+)
+
+/** A guided tour through the diagram: screens shown one after another. */
+export interface Journey {
+  /** Unique among the document's journeys. Stable: links point at it. */
+  id: string
+  title: string
+  description?: string
+  steps: JourneyStep[]
+  meta?: Meta
+}
+
 export interface TakeSixDocument {
-  /** Format version, `"1.1"`. */
+  /** Format version, `"1.2"`. */
   takesix: string
   /** Optional JSON Schema reference for editors. */
   $schema?: string
@@ -82,5 +114,7 @@ export interface TakeSixDocument {
   /** Top-level blocks. */
   blocks: Block[]
   links?: Link[]
+  /** Guided tours through the diagram. */
+  journeys?: Journey[]
   meta?: Meta
 }

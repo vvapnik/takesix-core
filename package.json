@@ -11,7 +11,8 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./schema.json": "./schema/takesix-1.1.schema.json",
+    "./schema.json": "./schema/takesix-1.2.schema.json",
+    "./schema-1.1.json": "./schema/takesix-1.1.schema.json",
     "./schema-1.0.json": "./schema/takesix-1.0.schema.json"
   },
   "files": [
