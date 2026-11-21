@@ -10,6 +10,7 @@ import { FORMAT_VERSION, MAX_BLOCKS_PER_LEVEL } from './constants.js'
 import { TakeSixError } from './errors.js'
 import { findPlace, fitsGrid, formatArea, levelAreas, overlap, parseArea, readArea, readingOrder, type Area } from './grid.js'
 import { createId } from './id.js'
+import { dropStepsTo } from './journey.js'
 import { buildIndex } from './tree-index.js'
 import type { Block, Link, TakeSixDocument } from './types.js'
 
@@ -195,11 +196,11 @@ export function updateBlock(doc: TakeSixDocument, id: string, changes: BlockChan
   return updateLevel(doc, parentId, blocks => blocks.map(b => (b.id === id ? applyChanges(b, changes) : b)))
 }
 
-/** Removes a block with its whole subtree, and every link touching any of them. */
+/** Removes a block with its whole subtree, and every link and journey step touching any of them. */
 export function removeBlock(doc: TakeSixDocument, id: string): TakeSixDocument {
   const { parentId, block } = requireBlock(doc, id)
   const removed = subtreeIds(block)
-  const next = updateLevel(doc, parentId, blocks => blocks.filter(b => b.id !== id))
+  const next = dropStepsTo(updateLevel(doc, parentId, blocks => blocks.filter(b => b.id !== id)), removed)
   if (!doc.links) return next
   return withLinks(next, doc.links.filter(l => !removed.has(l.from) && !removed.has(l.to)))
 }
@@ -290,8 +291,8 @@ export function groupBlocks(
 /**
  * Replaces a block with its children (the inverse of {@link groupBlocks}).
  * The children keep their arrangement, moved to where the block was; a child
- * that does not fit there goes to the first free place. Links attached to
- * the block itself are removed.
+ * that does not fit there goes to the first free place. Links and journey
+ * steps attached to the block itself are removed.
  */
 export function ungroupBlock(doc: TakeSixDocument, id: string): TakeSixDocument {
   const { parentId, block } = requireBlock(doc, id)
@@ -312,8 +313,9 @@ export function ungroupBlock(doc: TakeSixDocument, id: string): TakeSixDocument 
     })
     return [...rest, ...placed]
   })
-  if (!doc.links) return next
-  return withLinks(next, doc.links.filter(l => l.from !== id && l.to !== id))
+  const unstepped = dropStepsTo(next, new Set([id]))
+  if (!doc.links) return unstepped
+  return withLinks(unstepped, doc.links.filter(l => l.from !== id && l.to !== id))
 }
 
 // ── Links ─────────────────────────────────────────────────────────────────

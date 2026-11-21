@@ -26,6 +26,8 @@ export type IssueCode =
   | 'decision-exits'
   | 'decision-exit-label'
   | 'several-starts'
+  | 'duplicate-journey-id'
+  | 'unknown-step-target'
 
 export interface ValidationIssue {
   severity: IssueSeverity
@@ -41,7 +43,9 @@ export interface ValidationResult {
   issues: ValidationIssue[]
 }
 
-const DOCUMENT_FIELDS = ['takesix', '$schema', 'title', 'description', 'blocks', 'links', 'meta']
+const DOCUMENT_FIELDS = ['takesix', '$schema', 'title', 'description', 'blocks', 'links', 'journeys', 'meta']
+const JOURNEY_FIELDS = ['id', 'title', 'description', 'steps', 'meta']
+const STEP_FIELDS = ['in', 'at', 'label', 'duration', 'notes', 'meta']
 const BLOCK_FIELDS = ['id', 'title', 'description', 'details', 'icon', 'shape', 'tone', 'at', 'children', 'meta']
 const LINK_FIELDS = ['id', 'from', 'to', 'label', 'description', 'direction', 'style', 'meta']
 
@@ -249,6 +253,67 @@ export function validateDocument(input: unknown): ValidationResult {
         }
       })
       if (Array.isArray(input.blocks)) issues.push(...flowIssues(input.blocks, input.links, index))
+    }
+  }
+
+  // Journeys
+  if (input.journeys !== undefined) {
+    if (!Array.isArray(input.journeys)) {
+      error('invalid-type', '/journeys', '"journeys" must be an array')
+    } else {
+      const index = Array.isArray(input.blocks) ? buildIndex(input as unknown as TakeSixDocument) : new Map()
+      const seenJourneyIds = new Map<string, string>()
+      input.journeys.forEach((journey, i) => {
+        const jp = `/journeys/${i}`
+        if (!isObject(journey)) {
+          error('invalid-type', jp, 'Journey must be an object')
+          return
+        }
+        checkString(journey, 'id', jp, true)
+        checkString(journey, 'title', jp, true)
+        checkString(journey, 'description', jp, false)
+        checkMeta(journey, jp)
+        checkUnknown(journey, JOURNEY_FIELDS, jp)
+        if (typeof journey.id === 'string' && journey.id !== '') {
+          const first = seenJourneyIds.get(journey.id)
+          if (first !== undefined) error('duplicate-journey-id', `${jp}/id`, `Journey id "${journey.id}" is already used at ${first}`)
+          else seenJourneyIds.set(journey.id, jp)
+        }
+        if (journey.steps === undefined) {
+          error('missing-field', jp, '"steps" is required: the screens of the journey, in order')
+          return
+        }
+        if (!Array.isArray(journey.steps)) {
+          error('invalid-type', `${jp}/steps`, '"steps" must be an array')
+          return
+        }
+        journey.steps.forEach((step, k) => {
+          const sp = `${jp}/steps/${k}`
+          if (!isObject(step)) {
+            error('invalid-type', sp, 'Step must be an object')
+            return
+          }
+          checkString(step, 'label', sp, false)
+          checkString(step, 'notes', sp, false)
+          checkMeta(step, sp)
+          checkUnknown(step, STEP_FIELDS, sp)
+          if (step.duration !== undefined && !(typeof step.duration === 'number' && step.duration > 0 && Number.isFinite(step.duration))) {
+            error('invalid-value', `${sp}/duration`, '"duration" must be a positive number of seconds')
+          }
+          if (step.in !== undefined && step.at !== undefined) {
+            error('invalid-value', sp, 'A step has either "in" (the screen inside a block) or "at" (the block\'s level), not both')
+            return
+          }
+          // Neither: the top level
+          const key = step.in !== undefined ? 'in' : step.at !== undefined ? 'at' : undefined
+          if (!key) return
+          checkString(step, key, sp, true)
+          const target = step[key]
+          if (typeof target === 'string' && target !== '' && !index.has(target)) {
+            error('unknown-step-target', `${sp}/${key}`, `No block with id "${target}"`)
+          }
+        })
+      })
     }
   }
 

@@ -4,7 +4,7 @@ import type { BlockShape, BlockToneName, LinkDirection, LinkStyle } from './type
 export const MAX_BLOCKS_PER_LEVEL = 6
 
 /** Version written into new documents. */
-export const FORMAT_VERSION = '1.1'
+export const FORMAT_VERSION = '1.2'
 
 /** Major version this library can read. */
 export const SUPPORTED_MAJOR = 1
@@ -25,4 +25,7 @@ export const BLOCK_TONES: readonly BlockToneName[] = ['neutral', 'accent', 'succ
 /** A block's own colour in `tone`: `#RGB` or `#RRGGBB`. */
 export const TONE_COLOR_PATTERN = /^#(?:[0-9a-fA-F]{3}){1,2}$/
 
-export const SCHEMA_URL = 'https://takesix.vapnik.de/schema/takesix-1.1.schema.json'
+export const SCHEMA_URL = 'https://takesix.vapnik.de/schema/takesix-1.2.schema.json'
+
+/** Seconds a Journey step stays on screen when it has no `duration`. */
+export const DEFAULT_STEP_DURATION = 6

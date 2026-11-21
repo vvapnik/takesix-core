@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { BLOCK_SHAPES, BLOCK_TONES, LINK_DIRECTIONS, LINK_STYLES, MAX_BLOCKS_PER_LEVEL, readArea, SCHEMA_URL, TONE_COLOR_PATTERN } from '../src/index.js'
 
-const schema = JSON.parse(readFileSync(new URL('../schema/takesix-1.1.schema.json', import.meta.url), 'utf8'))
+const schema = JSON.parse(readFileSync(new URL('../schema/takesix-1.2.schema.json', import.meta.url), 'utf8'))
 
 // The JSON Schema is hand-written for editors and agents; keep it in sync
 // with the constants the validator uses.
@@ -18,6 +18,9 @@ describe('JSON Schema', () => {
     expect(schema.$defs.block.properties.tone.anyOf[1].pattern).toBe(TONE_COLOR_PATTERN.source)
     // A block opens into blocks or into text
     expect(schema.$defs.block.not.required).toEqual(['children', 'details'])
+    // A step points at a block in one of two ways, or at the top level
+    expect(Object.keys(schema.$defs.step.properties)).toEqual(['in', 'at', 'label', 'duration', 'notes', 'meta'])
+    expect(schema.$defs.step.not.required).toEqual(['in', 'at'])
   })
 
   it('accepts the same "at" syntax as the validator, apart from corner order', () => {
